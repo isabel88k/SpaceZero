@@ -35,7 +35,7 @@ npm run dev
 
 La alarma empieza con sonido activado; se puede silenciar con el botón de música. La elección de ciudad desbloquea Web Audio mediante el gesto del jugador. Al reiniciar se cancela el reloj anterior; elegir otra ciudad inicia veinte segundos nuevos. El movimiento reducido conserva los mismos tiempos, con filtro rojo estático y sin sacudidas.
 
-El cambio de polos y la pérdida repentina de atmósfera son **ficción de esta historia**. La pantalla lo señala durante el prólogo y la alerta. El botón Dato Real NASA explica la diferencia con los cambios reales de los polos magnéticos y enlaza a la explicación de NASA.
+El cambio de polos y la pérdida repentina de atmósfera son **ficción de esta historia**. La pantalla lo señala durante el prólogo y la alerta. El botón Info NASA explica la diferencia con los cambios reales de los polos magnéticos y enlaza a la explicación de NASA.
 
 ## Chispa y el modo sin frustración
 
@@ -57,7 +57,7 @@ Archivo original simplificado: `geoBoundaries-BOL-ADM1_simplified.geojson`, vers
 
 `lib/bolivia-data.json` guarda esos contornos y el plano de cada isla. `lib/regions.ts` y `lib/isometric.ts` restringen movimiento y rutas a casillas interiores conectadas. Se prueban las cinco puertas y todas las casillas transitables en los tres departamentos.
 
-La roca flotante, casas, palmeras, montañas, sal, astronauta, plantas, módulos y rover se dibujan por código. Chispa y las medallas son SVG pixelados. No se usan imágenes externas. Todos los Canvas desactivan el suavizado y el CSS global aplica `image-rendering: pixelated`. Se conservan Press Start 2P y VT323 desde Google Fonts, con respaldo local de fuentes genéricas.
+La roca flotante, casas, palmeras, montañas, sal, astronauta, plantas, módulos y rover se dibujan por código. Chispa y las medallas son SVG pixelados. No se usan imágenes externas. Todos los Canvas desactivan el suavizado y el CSS global aplica `image-rendering: pixelated`. La interfaz usa Pixelify Sans en negrita y títulos Silkscreen desde Google Fonts, con respaldo local monoespaciado. El cuerpo parte de 18–20 px, los diálogos usan 22 px y los títulos pixelados nunca bajan de 14 px. Los textos Canvas llevan un contorno negro de 4 px.
 
 ## Datos reales de NASA
 
@@ -65,7 +65,7 @@ La roca flotante, casas, palmeras, montañas, sal, astronauta, plantas, módulos
 - **DONKI:** conserva la consulta de llamaradas de los últimos 30 días con `DEMO_KEY`, validación de fecha/clase, cancelación y espera máxima de cinco segundos. Sin respuesta válida se usa la llamarada real **X8.7 del 14/05/2024 a las 16:51 UTC, región 13664**. La pantalla distingue consulta NASA y dato real guardado.
 - Los datos no provocan peligros reales ni representan un pronóstico. El escudo, el viaje de la isla y los consumos son reglas del juego.
 - Sabatier en la ISS combina hidrógeno y CO₂ para recuperar agua; **no quema el oxígeno de la cabina**. La nota NASA aclara la diferencia con la máquina simplificada del juego.
-- Cada misión conserva el botón pequeño **[?] Dato Real NASA**, con enlaces a Sabatier, Opportunity, Pathfinder, DONKI y Jezero.
+- El acceso único **[?] Info NASA** muestra el dato de cada misión, con enlaces a Sabatier, Opportunity, Pathfinder, DONKI y Jezero.
 
 `PRESERVACION_LOGICA.json` documenta la comparación de las funciones de consulta, URL y parser con la versión anterior. El proveedor sí cambia para pausar temporizadores durante la ayuda; los bloques de consulta POWER/DONKI permanecen iguales.
 
@@ -78,3 +78,9 @@ npm run build
 ```
 
 Pruebas de rutas dentro de las islas, cálculos de recursos, API y respaldos, preguntas sin castigo, medallas sin duplicación, pausas y recuperación, reintento de escudo, seis recorridos completos, diploma y reinicio. El detalle de la revisión visual está en `VERIFICACION.txt`.
+
+## Interfaz de lectura clara
+
+Los objetivos, recursos y diálogos tienen fondos oscuros casi sólidos y bordes de 4 px. El suelo usa colores planos y menos adornos; no hay líneas CRT ni parpadeo habitual. Solo las emergencias conservan la alerta visual. El objetivo está fijo al desplazarse. El nombre de un edificio aparece si es la misión, si estás cerca o si lo señalas.
+
+Un único acceso **[?] Info NASA** reúne los datos, las fuentes y los detalles opcionales. Desde allí se despliegan Cómo jugar y Mi viaje. En las misiones, abrir esta información pausa el cultivo y permite regresar al panel. Las fórmulas, los recursos y las conexiones NASA conservan su implementación.

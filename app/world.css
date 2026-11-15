@@ -230,6 +230,15 @@
   place-items: center;
   overflow: hidden;
 }
+.world-atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
 .world-surface {
   position: relative;
   flex-shrink: 0;
@@ -5231,4 +5240,118 @@
 .easy-game.jezero-game .mission-goal {
   position: sticky;
   top: 0;
+}
+
+/* The sky sits behind the entire screen. The camera fits inside the space
+   between the HUD and guide so interactive terrain stays clear of both. */
+@media screen {
+  .floating-world.kids-game {
+    --world-gutter: 20px;
+    --world-dock-height: 56px;
+    --world-dock-bottom: 20px;
+    position: relative;
+    isolation: isolate;
+    height: 100dvh;
+    min-height: 0;
+    overflow: clip;
+    background: #11152b;
+  }
+  .floating-world .world-atmosphere {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    width: 100vw;
+    height: 100dvh;
+    display: block;
+  }
+  .floating-world.kids-game .iso-world {
+    flex: 1 1 0;
+    min-height: 0;
+    height: auto;
+    isolation: auto;
+    background: transparent;
+  }
+  .floating-world .world-canvas-container,
+  .floating-world .jezero-canvas-container {
+    inset: 0 0 calc(var(--world-dock-height) + var(--world-dock-bottom) + 2px);
+    overflow: hidden;
+    contain: size;
+  }
+  .floating-world .world-canvas-container {
+    grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  }
+  .floating-world .jezero-surface {
+    position: relative;
+    flex: none;
+  }
+  .floating-world .jezero-surface > canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .floating-world .world-surface:not(.is-dragging) {
+    transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .floating-world .world-surface.is-dragging > canvas {
+    cursor: grabbing;
+  }
+  .floating-world .world-notices {
+    position: absolute;
+    z-index: 10;
+    inset: 6px 0 auto;
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    pointer-events: none;
+  }
+  .floating-world .world-notices:has(.eva-route-card) {
+    inset: auto auto
+      calc(var(--world-dock-height) + var(--world-dock-bottom) + 10px)
+      var(--world-gutter);
+    justify-items: start;
+  }
+  .floating-world .with-rover-controls {
+    --rover-console-width: clamp(240px, 23vw, 320px);
+  }
+  .floating-world .with-rover-controls .jezero-canvas-container {
+    right: calc(var(--world-console-gap, 24px) + var(--rover-console-width));
+  }
+
+  @media (max-width: 760px) {
+    .floating-world.kids-game {
+      --world-gutter: 12px;
+      --world-dock-height: 52px;
+      --world-dock-bottom: 8px;
+      height: auto;
+      min-height: 100dvh;
+      overflow: visible;
+    }
+    .floating-world.kids-game .iso-world {
+      flex-basis: auto;
+      min-height: max(260px, 35dvh);
+    }
+    .floating-world.kids-game .iso-world:has(.origin-overlay) {
+      min-height: 0;
+      height: auto;
+      flex: none;
+    }
+    .floating-world.kids-game .with-rover-controls {
+      min-height: max(340px, 45dvh);
+    }
+    .floating-world .with-rover-controls .jezero-canvas-container {
+      inset: 0 0
+        calc(var(--world-dock-height) + var(--world-dock-bottom) + 62px);
+    }
+  }
+  @media (max-height: 580px) and (min-width: 761px) {
+    .floating-world.kids-game {
+      height: auto;
+      min-height: 100dvh;
+      overflow: visible;
+    }
+    .floating-world.kids-game .iso-world {
+      flex-basis: auto;
+      min-height: 255px;
+    }
+  }
 }

@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
-import { useGame } from "../GameProvider";
+import { useGame, useTranslate } from "../GameProvider";
 import { NasaFact } from "../NasaFact";
 import { CITIES } from "@/lib/game";
 import {
@@ -14,8 +14,11 @@ import { JezeroCanvas, type JezeroHandle } from "./JezeroCanvas";
 import { MedalBar, LearningLayer, SciencePlayCard } from "./LearningUI";
 import { MissionDossier } from "./MissionDossier";
 import { PixelPlanet, WorldDialogue, MissionGoal } from "./WorldUI";
+import { WorldAtmosphere } from "./WorldAtmosphere";
+import { LanguageButton } from "./LanguageButton";
 import { TacticalModal } from "./TacticalModal";
 export function JezeroExpedition({ onRestart }: { onRestart: () => void }) {
+  const tr = useTranslate();
   const { state: s, act, sound, toggleSound } = useGame(),
     rover = useRef<JezeroHandle>(null),
     [moving, setMoving] = useState(false),
@@ -27,52 +30,61 @@ export function JezeroExpedition({ onRestart }: { onRestart: () => void }) {
     heaterOn = s.rover.heater === "high";
   return (
     <div
-      className={`iso-game easy-game kids-game jezero-game ${night ? "jezero-night" : ""}`}
+      className={`iso-game easy-game kids-game floating-world jezero-game ${night ? "jezero-night" : ""}`}
     >
+      <WorldAtmosphere
+        city={s.cityId}
+        transform={1}
+        weather={night ? "night" : "clear"}
+      />
       <header className="iso-topbar">
         <a className="iso-brand" href="#jezero">
           <span>
             <PixelPlanet />
           </span>
           <div>
-            MISIÓN RESCATE
+            {tr("MISIÓN RESCATE")}
             <small>
-              ESPEJO <b>MARCIANO</b>
+              {tr("ESPEJO")} <b>{tr("MARCIANO")}</b>
             </small>
           </div>
         </a>
+        <MedalBar />
         <div className="iso-header-status">
           <span className="live-dot" />
-          RUMBO AL RESCATE
+          {tr("RUMBO AL RESCATE")}
         </div>
         <div className="iso-header-actions">
+          <LanguageButton />
           <span className="iso-sol">
-            DÍA <strong>28</strong>
+            {tr("DÍA")} <strong>28</strong>
             <small>/28</small>
           </span>
           <button
             className="iso-icon-button"
             onClick={toggleSound}
-            aria-label={sound ? "Apagar sonido" : "Encender sonido"}
+            aria-label={sound ? tr("Apagar sonido") : tr("Encender sonido")}
             aria-pressed={sound}
           >
             {sound ? "♪" : "♫"}
-            <span>{sound ? "SÍ" : "NO"}</span>
+            <span>{sound ? tr("SÍ") : "NO"}</span>
           </button>
         </div>
       </header>
-      <MedalBar />
       <MissionGoal text={missionObjective(s)} />
-      <section className="rover-hud" aria-label="Batería y calor del equipo">
+      <section
+        className="rover-hud"
+        aria-label={tr("Batería y calor del equipo")}
+      >
         <TwinMeter
-          label="BATERÍA"
+          label={tr("BATERÍA")}
           value={s.resources.energia}
           unit="%"
           percent={s.resources.energia}
           color="#ffb000"
         />
         <TwinMeter
-          label="CALOR DEL EQUIPO"
+          label={tr("CALOR DEL EQUIPO")}
           value={s.rover.bodyTemperature}
           unit="°C"
           percent={((s.rover.bodyTemperature - 30) / 7.4) * 100}
@@ -82,59 +94,63 @@ export function JezeroExpedition({ onRestart }: { onRestart: () => void }) {
         />
         <div className="rover-environment">
           <span>
-            {night ? "☾ ES DE NOCHE" : "☀ TODAVÍA ES DE DÍA"}{" "}
+            {night ? tr("☾ ES DE NOCHE") : tr("☀ TODAVÍA ES DE DÍA")}{" "}
             <b>{night ? "−80" : "−35"} °C</b>
           </span>
-          <span>El abrigo de {city?.name} viaja contigo.</span>
+          <span>
+            {tr(
+              `El abrigo de ${city?.name} viaja contigo.`,
+              `The warmth from ${tr(city?.name ?? "")} comes with you.`,
+            )}
+          </span>
         </div>
       </section>
       <main
         id="jezero"
-        className="iso-world jezero-world"
-        aria-label="Camino al rescate en Jezero"
+        className={`iso-world jezero-world${route && !s.outcome ? " with-rover-controls" : ""}`}
+        aria-label={tr("Camino al rescate en Jezero")}
       >
         <div className="world-heading">
-          <div className="eyebrow">EL ÚLTIMO VIAJE</div>
+          <div className="eyebrow">{tr("EL ÚLTIMO VIAJE")}</div>
           <h1>
-            ¡VAMOS
+            {tr("¡VAMOS")}
             <br />
-            <em>A CASA!</em>
+            <em>{tr("A CASA!")}</em>
           </h1>
-          <p>Sigue la flecha amarilla.</p>
+          <p>{tr("Sigue la flecha amarilla.")}</p>
         </div>
         <div className="jezero-map-id">
-          <span>CRÁTER JEZERO</span>
-          <strong>EL RESCATE NOS ESPERA</strong>
+          <span>{tr("CRÁTER JEZERO")}</span>
+          <strong>{tr("EL RESCATE NOS ESPERA")}</strong>
         </div>
         <JezeroCanvas
           ref={rover}
           onMoving={setMoving}
           blocked={!!panel || !!s.support || s.learning.pending !== null}
         />
-        <div className="jezero-extraction-label">
-          AQUÍ NOS RECOGEN <b>↗</b>
-        </div>
         <div className="jezero-legend">
           <span>
             <i style={{ background: "#ffb000" }} />
-            CAMINO CORTO
+            {tr("CAMINO CORTO")}
           </span>
           <span>
             <i style={{ background: "#5ce1e6" }} />
-            CAMINO LARGO
+            {tr("CAMINO LARGO")}
           </span>
         </div>
         {!route && !s.outcome && (
           <section
             className="route-planner easy-route-planner"
-            aria-label="Elige un camino"
+            aria-label={tr("Elige un camino")}
           >
-            <span className="eyebrow">ANTES DE SALIR</span>
-            <h2>¿POR DÓNDE VAMOS?</h2>
+            <span className="eyebrow">{tr("ANTES DE SALIR")}</span>
+            <h2>{tr("¿POR DÓNDE VAMOS?")}</h2>
             <p className="short-copy">
-              Tenemos {s.resources.energia.toFixed(0)}% de batería para llegar.
+              {tr(
+                `Tenemos ${s.resources.energia.toFixed(0)}% de batería para llegar.`,
+                `We have ${s.resources.energia.toFixed(0)}% battery power to get there.`,
+              )}
             </p>
-            <SciencePlayCard mission={28} />
             <div className="route-options">
               {(Object.keys(ROUTES) as RoverRoute[]).map((id) => {
                 const r = ROUTES[id];
@@ -151,9 +167,9 @@ export function JezeroExpedition({ onRestart }: { onRestart: () => void }) {
                       {r.distance}
                       <small> KM</small>
                     </strong>
-                    <h3>{r.name}</h3>
-                    <p>{r.description}</p>
-                    <em>ELEGIR ESTE CAMINO →</em>
+                    <h3>{tr(r.name)}</h3>
+                    <p>{tr(r.description)}</p>
+                    <em>{tr("ELEGIR ESTE CAMINO →")}</em>
                   </button>
                 );
               })}
@@ -163,7 +179,7 @@ export function JezeroExpedition({ onRestart }: { onRestart: () => void }) {
         {route && (
           <div className="rover-route-progress">
             <span>
-              {route.name.toUpperCase()}
+              {tr(route.name.toUpperCase())}
               <b>
                 {s.rover.segment * 5} / {route.distance} KM
               </b>
@@ -183,18 +199,20 @@ export function JezeroExpedition({ onRestart }: { onRestart: () => void }) {
               ))}
             </div>
             <small>
-              {moving ? "ROVER EN MARCHA" : "TOCA AVANZAR O CONDUCE TÚ"}
+              {moving ? tr("ROVER EN MARCHA") : tr("TOCA AVANZAR O CONDUCE TÚ")}
             </small>
           </div>
         )}
         {route && !s.outcome && (
           <section
             className="rover-console easy-rover-console"
-            aria-label="Conducir y encender calor"
+            aria-label={tr("Conducir y encender calor")}
           >
             <div className="rover-console-heading">
-              <span>CUIDA AL EQUIPO</span>
-              <b>{night ? "HACE MUCHO FRÍO AFUERA" : "LLEGAREMOS PRONTO"}</b>
+              <span>{tr("CUIDA AL EQUIPO")}</span>
+              <b>
+                {night ? tr("HACE MUCHO FRÍO AFUERA") : tr("LLEGAREMOS PRONTO")}
+              </b>
             </div>
             <button
               className={`rover-heat-toggle ${heaterOn ? "switched-on" : ""}`}
@@ -204,22 +222,22 @@ export function JezeroExpedition({ onRestart }: { onRestart: () => void }) {
                 act({ type: "ROVER_HEAT", heater: heaterOn ? "off" : "high" })
               }
             >
-              <span aria-hidden="true">🔥</span> Calefacción:{" "}
-              {heaterOn ? "ENCENDIDA" : "APAGADA"}
+              <span aria-hidden="true">🔥</span> {tr("Calefacción:")}{" "}
+              {heaterOn ? tr("ENCENDIDA") : tr("APAGADA")}
               <i />
             </button>
             <p className="short-copy easy-tip">
               {!heaterOn && night
-                ? "¡Es de noche! Enciende el calor para cuidar al equipo."
-                : "El calor usa batería y evita que pasemos frío."}
+                ? tr("¡Es de noche! Enciende el calor para cuidar al equipo.")
+                : tr("El calor usa batería y evita que pasemos frío.")}
             </p>
             <div className="rover-forecast">
-              <span>DESPUÉS DE AVANZAR</span>
+              <span>{tr("DESPUÉS DE AVANZAR")}</span>
               <b className={f.battery <= 0 ? "warn" : ""}>
-                {f.battery.toFixed(1)}% <i>BATERÍA</i>
+                {f.battery.toFixed(1)}% <i>{tr("BATERÍA")}</i>
               </b>
               <b className={f.bodyTemperature < 35 ? "warn" : ""}>
-                {f.bodyTemperature.toFixed(1)} °C <i>EQUIPO</i>
+                {f.bodyTemperature.toFixed(1)} °C <i>{tr("EQUIPO")}</i>
               </b>
             </div>
             <button
@@ -227,51 +245,78 @@ export function JezeroExpedition({ onRestart }: { onRestart: () => void }) {
               disabled={moving}
               onClick={() => rover.current?.next()}
             >
-              {moving ? "ROVER EN MARCHA…" : "AVANZAR 5 KM"} <span>→</span>
+              {moving ? tr("ROVER EN MARCHA…") : tr("AVANZAR 5 KM")}{" "}
+              <span>→</span>
             </button>
             <p className="short-copy easy-tip">
-              También puedes conducir con las flechas o tocar el mapa.
+              {tr("También puedes conducir con las flechas o tocar el mapa.")}
             </p>
           </section>
         )}
-        <button className="world-nasa-button" onClick={() => setPanel("nasa")}>
-          [?] Dato Real NASA
-        </button>
+        {!panel && (
+          <button
+            className="world-nasa-button"
+            onClick={() => setPanel("nasa")}
+          >
+            {tr("[?] Info NASA")}
+          </button>
+        )}
       </main>
       <WorldDialogue
-        tag="DÍA 28"
+        tag={tr("DÍA 28")}
         text={
           s.rover.route
-            ? "¡Sigue los puntos! Toca «Avanzar 5 km». De noche, enciende el calor."
-            : "¡Como en bici! Elige un camino: corto con cuestas o largo y más frío."
+            ? tr(
+                "¡Sigue los puntos! Toca «Avanzar 5 km». De noche, enciende el calor.",
+              )
+            : tr(
+                "¡Como en bici! Elige un camino: corto con cuestas o largo y más frío.",
+              )
         }
         onHistory={() => setPanel("history")}
       />
       <footer className="iso-controls">
         <span>
-          <kbd>WASD</kbd> / <kbd>FLECHAS</kbd> CONDUCIR · TOCA EL MAPA PARA IR
-          AHÍ
+          <kbd>WASD</kbd> / <kbd>{tr("FLECHAS")}</kbd>{" "}
+          {tr("CONDUCIR · TOCA EL MAPA PARA IR AHÍ")}
         </span>
         <span>
-          AGUA {s.resources.agua.toFixed(0)}% · AIRE{" "}
-          {s.resources.oxigeno.toFixed(0)}% · EQUIPO{" "}
-          {s.resources.integridadTripulacion.toFixed(0)}%
+          {tr("AGUA")} {s.resources.agua.toFixed(0)}
+          {tr("% · AIRE")} {s.resources.oxigeno.toFixed(0)}
+          {tr("% · EQUIPO")} {s.resources.integridadTripulacion.toFixed(0)}%
         </span>
       </footer>
       {panel && !s.outcome && (
         <TacticalModal
-          title={panel === "nasa" ? "Dato Real NASA" : "Mi viaje"}
-          tag="DÍA 28"
+          title={panel === "nasa" ? tr("Info NASA") : tr("Mi viaje")}
+          tag={tr("DÍA 28")}
           onClose={() => setPanel(null)}
         >
           {panel === "nasa" ? (
-            <NasaFact mission="rover" initialOpen />
+            <>
+              <SciencePlayCard mission={28} />
+              <NasaFact mission="rover" initialOpen />
+              <details className="secondary-info">
+                <summary>{tr("Cómo conducir")}</summary>
+                <p>
+                  {tr(
+                    "Toca Avanzar 5 km o conduce con WASD y las flechas. Enciende el calor por la noche.",
+                  )}
+                </p>
+              </details>
+              <details className="secondary-info">
+                <summary>{tr("Mi viaje")}</summary>
+                {s.logs.map((l, i) => (
+                  <p key={`${l.id}-${i}`}>{tr(l.text)}</p>
+                ))}
+              </details>
+            </>
           ) : (
             <div className="world-history">
               {s.logs.map((l, i) => (
                 <article key={`${l.id}-${i}`}>
-                  <span>{l.tag}</span>
-                  <p className="short-copy">{l.text}</p>
+                  <span>{tr(l.tag)}</span>
+                  <p className="short-copy">{tr(l.text)}</p>
                 </article>
               ))}
             </div>

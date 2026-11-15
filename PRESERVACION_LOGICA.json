@@ -17,5 +17,44 @@
     "Respaldo POWER histórico al segundo 20 como protección adicional si no llegaron datos.",
     "La escena del cataclismo se identifica como fantasía."
   ],
-  "geografia": "Se conservan los contornos GeoBolivia/geoBoundaries y el motor isométrico."
+  "geografia": "Se conservan los contornos GeoBolivia/geoBoundaries y el motor isométrico.",
+  "revision_visual": {
+    "version": "Lectura clara",
+    "fecha": "2026-11-15",
+    "modulos_sin_cambios": {
+      "lib/donki.ts": {
+        "sin_cambios": true,
+        "sha256": "ed33f4b46db900836c24738c78826c4087fb56b7f3884884365256904efa1158"
+      },
+      "lib/rover.ts": {
+        "sin_cambios": true,
+        "sha256": "22908bf340357725e5d65fc9be22703c5503ded8dde7b49d64332bd39ba991af"
+      },
+      "lib/learning.ts": {
+        "sin_cambios": true,
+        "sha256": "e203c090a17b565ad6283ee5fc53942c9026510fc43771b57b6e6bbf1540f439"
+      },
+      "lib/prologue.ts": {
+        "sin_cambios": true,
+        "sha256": "1cb4770e681153a395817ce91e58d70b8440629b0671c371432176b9443ffdb5"
+      },
+      "components/GameProvider.tsx": {
+        "sin_cambios": true,
+        "sha256": "31f1434780c539c0289909c55faafff786680a107ca68e1186bf207286ef7041"
+      },
+      "lib/game.ts": {
+        "sin_cambios": true,
+        "sha256": "e2634cc6a83dd2bdbccd9b0bf9c4adf081f3a3bbcc3aecd692e4743b655f822c"
+      },
+      "lib/rescue.ts": {
+        "sin_cambios": true,
+        "sha256": "2ee516bb201b77ccbccb254e0ea1c24ae15fec3ffb489adb905eb932284155af"
+      },
+      "lib/simulation.ts": {
+        "sin_cambios": true,
+        "sha256": "47748a9a7de2244b7c0040555ce964e014a5fedf16c1e643c0c81a4489361ac8"
+      }
+    },
+    "alcance": "Fuentes, contraste, dibujo, navegación de paneles informativos y distribución. Recursos, reloj y APIs conservados."
+  }
 }

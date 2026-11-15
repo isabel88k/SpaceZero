@@ -69,9 +69,32 @@ ARTE Y GEOGRAFÍA
 - La Paz y Potosí usan su polígono principal. Uyuni corresponde al departamento de Potosí.
 - La escala de los juguetes, la isla voladora, el escudo y los consumos son ficción educativa.
 - Sprites, terrenos y medallas procedurales Canvas/SVG; ninguna imagen externa.
-- Fuentes Press Start 2P y VT323; Canvas sin suavizado y estilos para movimiento reducido.
+- Fuentes Pixelify Sans y Silkscreen en negrita; Canvas sin suavizado y estilos para movimiento reducido.
 
 CAPTURAS
 - chispa-ayuda.jpg: pausa por frío y botón para corregir.
 - chispa-diploma.jpg: diploma y cuatro medallas.
 - chispa-isla.jpg: mundo isométrico con guía de misión.
+
+
+REVISIÓN VISUAL: LECTURA CLARA (15/11/2026)
+- Pixelify Sans y Silkscreen en negrita: cuerpo de 18–20 px, diálogos de 22 px, títulos desde 14 px.
+- Fondos #0D0C14 casi sólidos y bordes cian de 4 px en objetivos, recursos y diálogo.
+- Todos los textos Canvas se dibujan con strokeText negro de 4 px antes de fillText.
+- Sin capa CRT, destellos ambientales, estrellas de fondo ni punteado repetido del suelo.
+- Se conserva la alerta de emergencia y la opción de movimiento reducido.
+- Edificios con iconos grandes: nombre visible para la misión, al acercarse o al señalar.
+- Un solo acceso visible Info NASA. La ciencia, instrucciones ampliadas, zoom y bitácora se reúnen allí.
+- Los controles de agua y luz aparecen primero; las analogías educativas siguen disponibles en Info NASA.
+- Las cuatro tarjetas de la tormenta se ven juntas. El rover muestra calefacción y avance.
+- Comprobación visual en 1280×720 y 390×844, sin desbordamiento horizontal.
+- Se abrió Info NASA desde el Invernadero, se cerró y se volvió al panel de cultivo.
+- Partida completa: prólogo automático, cultivo de 25 segundos, tres rondas, antena, alerta, escudo, 25 km y cuatro medallas.
+- Se observó NASA POWER en vivo y el respaldo histórico X8.7 de DONKI, correctamente identificado.
+- Las pruebas de lógica existentes: 66 aprobadas. Compilación de producción y TypeScript correctos.
+- Ocho módulos de estado, cálculo, aprendizaje y conexión NASA son idénticos byte por byte a la copia previa a esta revisión.
+- El detalle y hashes están en PRESERVACION_LOGICA.json.
+- La nueva compilación está en out/. No se ha publicado esta revisión visual en GitHub ni Sites.
+
+Archivos nuevos: app/readability.css y lib/canvas-label.ts.
+Capturas: lectura-base.jpg, lectura-inicio.jpg, lectura-inicio-movil.jpg, lectura-invernadero-movil.jpg, lectura-tormenta.jpg, lectura-antena.jpg y lectura-caminos.jpg.

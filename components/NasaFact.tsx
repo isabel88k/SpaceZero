@@ -1,4 +1,5 @@
 "use client";
+import { useTranslate } from "@/components/GameProvider";
 import { useId, useState, type ReactNode } from "react";
 type Mission = "origin" | "water" | "storm" | "signal" | "rover";
 const FACTS: Record<Mission, { text: string[]; links: [string, string][] }> = {
@@ -91,34 +92,37 @@ export function NasaFact({
   disabled?: boolean;
   initialOpen?: boolean;
 }) {
+  const tr = useTranslate();
   const [open, setOpen] = useState(initialOpen),
     id = useId(),
     fact = FACTS[mission];
   return (
     <section className="nasa-fact">
-      <button
-        type="button"
-        className="nasa-fact-button"
-        aria-expanded={open}
-        aria-controls={id}
-        disabled={disabled}
-        onClick={() => {
-          if (!open) onOpen?.();
-          setOpen(!open);
-        }}
-      >
-        [?] Dato Real NASA
-      </button>
+      {!initialOpen && (
+        <button
+          type="button"
+          className="nasa-fact-button"
+          aria-expanded={open}
+          aria-controls={id}
+          disabled={disabled}
+          onClick={() => {
+            if (!open) onOpen?.();
+            setOpen(!open);
+          }}
+        >
+          {tr("[?] Info NASA")}
+        </button>
+      )}
       <div className="nasa-fact-content" id={id} hidden={!open}>
         {fact.text.map((text) => (
-          <p className="short-copy" key={text}>
-            {text}
+          <p className="short-copy" key={tr(text)}>
+            {tr(text)}
           </p>
         ))}
         {children}
         {fact.links.map(([label, url]) => (
           <a href={url} key={url} target="_blank" rel="noreferrer">
-            {label} ↗
+            {tr(label)} ↗
           </a>
         ))}
       </div>

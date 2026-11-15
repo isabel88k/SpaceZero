@@ -6,9 +6,9 @@ import {
   useRef,
   useState,
 } from "react";
-import { useGame } from "../GameProvider";
+import { useGame, useTranslate } from "../GameProvider";
 import { regionSpawn } from "@/lib/regions";
-import { renderWorld } from "@/lib/world-renderer";
+import { createMotionTrail, renderWorld } from "@/lib/world-renderer";
 import {
   structuresForCity,
   activeBuilding,
@@ -25,6 +25,14 @@ import {
   type BuildingId,
   type Point,
 } from "@/lib/isometric";
+const EARTH_BUILDINGS: Record<BuildingId, string> = {
+  refuge: "PLAZA CENTRAL",
+  greenhouse: "JARDÍN BOTÁNICO",
+  solar: "ESTACIÓN ELÉCTRICA",
+  probe: "TORRE DE RADIO",
+  garage: "GARAJE",
+};
+
 export type WorldHandle = {
   goTo: (id: BuildingId) => void;
   walkTo: (p: Point) => void;
@@ -47,6 +55,7 @@ type Props = {
 };
 export const WorldCanvas = forwardRef<WorldHandle, Props>(
   function WorldCanvas(props, ref) {
+    const tr = useTranslate();
     const { state } = useGame();
     const live = useRef({ state, ...props });
     live.current = { state, ...props };
@@ -63,10 +72,13 @@ export const WorldCanvas = forwardRef<WorldHandle, Props>(
       held = useRef(new Set<string>());
     const [fit, setFit] = useState(1),
       [zoom, setZoom] = useState(1),
-      [pan, setPan] = useState({ x: 0, y: 0 });
+      [pan, setPan] = useState({ x: 0, y: 0 }),
+      [dragging, setDragging] = useState(false);
+    const zoomLevel = useRef(1);
     const [position, setPosition] = useState<Point>({ x: 5, y: 6 }),
       [nearby, setNearby] = useState<BuildingId | null>(null);
     const drag = useRef<{
+      id: number;
       x: number;
       y: number;
       px: number;
@@ -101,6 +113,18 @@ export const WorldCanvas = forwardRef<WorldHandle, Props>(
         live.current.onArrive(b.id);
       }
     }
+    function changeZoom(delta: number) {
+      const value = delta
+        ? Math.min(2, Math.max(0.85, zoomLevel.current + delta))
+        : 1;
+      zoomLevel.current = value;
+      setZoom(value);
+      if (value <= 1) setPan({ x: 0, y: 0 });
+    }
+    function finishDrag() {
+      drag.current = null;
+      setDragging(false);
+    }
     useImperativeHandle(ref, () => ({
       goTo,
       walkTo: (p) => walkTo(p),
@@ -114,17 +138,36 @@ export const WorldCanvas = forwardRef<WorldHandle, Props>(
           direction: 1,
         };
         held.current.clear();
-        setPan({ x: 0, y: 0 });
-        setZoom(1);
+        finishDrag();
+        changeZoom(0);
       },
-      zoom: (d) => {
-        setZoom((v) => Math.max(0.9, Math.min(1.8, v + d * 0.2)));
-        if (d === 0) {
-          setZoom(1);
-          setPan({ x: 0, y: 0 });
-        }
+      zoom: (direction) => {
+        if (!live.current.blocked) changeZoom(direction * 0.2);
       },
     }));
+    useEffect(() => {
+      const node = canvas.current;
+      if (!node) return;
+      function wheel(e: WheelEvent) {
+        if (
+          live.current.blocked ||
+          drag.current ||
+          e.ctrlKey ||
+          e.metaKey ||
+          !e.deltaY
+        )
+          return;
+        e.preventDefault();
+        const unit =
+          e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? node!.clientHeight : 1;
+        changeZoom(
+          -Math.sign(e.deltaY) *
+            Math.min(0.22, Math.abs(e.deltaY) * unit * 0.002),
+        );
+      }
+      node.addEventListener("wheel", wheel, { passive: false });
+      return () => node.removeEventListener("wheel", wheel);
+    }, []);
     useEffect(() => {
       hero.current.position = regionSpawn(state.cityId);
       hero.current.path = [];
@@ -134,14 +177,13 @@ export const WorldCanvas = forwardRef<WorldHandle, Props>(
     useEffect(() => {
       const node = container.current;
       if (!node) return;
-      const resize = new ResizeObserver(([entry]) =>
+      const resize = new ResizeObserver(([entry]) => {
+        const { width, height } = entry.contentRect;
+        // Frame the terrain, including the floating rocks beneath it.
         setFit(
-          Math.min(
-            entry.contentRect.width / WORLD.width,
-            entry.contentRect.height / WORLD.height,
-          ),
-        ),
-      );
+          Math.min(width / (WORLD.width * 0.8), height / (WORLD.height * 0.74)),
+        );
+      });
       resize.observe(node);
       return () => resize.disconnect();
     }, []);
@@ -208,9 +250,11 @@ export const WorldCanvas = forwardRef<WorldHandle, Props>(
       let raf = 0,
         last = performance.now(),
         lastReport = 0;
-      const reduced = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
+      const trail = createMotionTrail();
+      let trailCity = live.current.state.cityId;
+      let recovered = live.current.state.storm.recovered;
+      let chargeStarted = -Infinity;
+      const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
       function frame(time: number) {
         const dt = Math.min(0.05, (time - last) / 1000);
         last = time;
@@ -247,10 +291,27 @@ export const WorldCanvas = forwardRef<WorldHandle, Props>(
             }
           }
         }
+        const reduced = motion.matches;
+        const storm = p.state.solActual === 8;
+        if (p.state.cityId !== trailCity) {
+          trail.clear();
+          trailCity = p.state.cityId;
+        }
+        const trailFoot = project(h.position);
+        if (!tileIsMars(h.position.x, h.position.y, p.transformation))
+          trailFoot.y -=
+            terraceHeight(h.position.x, h.position.y, trailCity) * 1.15;
+        const footprints = trail.update(trailFoot, time, h.moving, reduced);
+        const nextRecovered = p.state.storm.recovered;
+        if (!storm || nextRecovered < recovered) chargeStarted = -Infinity;
+        else if (nextRecovered > recovered) chargeStarted = time;
+        recovered = nextRecovered;
+
         renderWorld(c!, {
           state: p.state,
           position: h.position,
           moving: h.moving,
+          footprints,
           direction: h.direction,
           time,
           transform: p.transformation,
@@ -268,6 +329,8 @@ export const WorldCanvas = forwardRef<WorldHandle, Props>(
           hover: hover.current,
           reduced,
           cleaning: p.cleaning,
+          solarCharge: Math.max(0, 1 - (time - chargeStarted) / 1050),
+          active: p.active,
         });
         if (time - lastReport > 90) {
           lastReport = time;
@@ -327,42 +390,71 @@ export const WorldCanvas = forwardRef<WorldHandle, Props>(
     const avatarZ = tileIsMars(position.x, position.y, props.transformation)
       ? 0
       : terraceHeight(position.x, position.y, state.cityId);
-    const labelPoints = new Map<BuildingId, Point>();
-    const placed: { point: Point; width: number }[] = [];
-    const labels = structuresForCity(state.cityId)
-      .map((b) => {
-        const point = project({
-          x: b.x + (b.w - 1) / 2,
-          y: b.y + (b.d - 1) / 2,
-        });
-        const z = tileIsMars(b.x, b.y, props.transformation)
-          ? 0
-          : terraceHeight(b.x, b.y, state.cityId);
-        point.y -= b.height + z + 22;
-        return {
-          b,
-          point,
-          width: (b.short.length * 7 + 45) / Math.max(0.4, fit),
-        };
-      })
-      .sort((a, b) => a.point.y - b.point.y);
-    for (const { b, point, width } of labels) {
-      for (let tries = 0; tries < 10; tries++) {
-        const collision = placed.find(
-          (p) =>
-            Math.abs(p.point.x - point.x) < (p.width + width) / 2 + 5 &&
-            Math.abs(p.point.y - point.y) < 42 / Math.max(0.4, fit),
-        );
-        if (!collision) break;
-        point.y = collision.point.y + 43 / Math.max(0.4, fit);
+    const scale = Math.max(0.01, fit * zoom);
+    const frameWidth = (container.current?.clientWidth ?? WORLD.width) / scale;
+    const frameLeft = (WORLD.width - frameWidth) / 2 - pan.x / scale;
+    const frameTop =
+      (WORLD.height -
+        (container.current?.clientHeight ?? WORLD.height) / scale) /
+        2 -
+      pan.y / scale;
+    const buildings = structuresForCity(state.cityId);
+    const labels = buildings.map((b) => {
+      const point = project({
+        x: b.x + (b.w - 1) / 2,
+        y: b.y + (b.d - 1) / 2,
+      });
+      const isMars = tileIsMars(b.x, b.y, props.transformation);
+      const elevation = isMars ? 0 : terraceHeight(b.x, b.y, state.cityId);
+      const active = props.active === b.id;
+      const close = nearby === b.id;
+      const name = tr(isMars ? b.short : EARTH_BUILDINGS[b.id]);
+      const openWidth = Math.min(34 + name.length * 8 + 16, 254) * 1.06;
+      const width = (active || close ? openWidth : 34) / scale;
+      point.y -= b.height + elevation + 4;
+      if (active) {
+        // Place the expanded label beside the yellow Canvas arrow.
+        const side = point.x < WORLD.width / 2 ? 1 : -1;
+        point.x += side * (width / 2 + 14 / scale);
+        point.y += 9 / scale;
       }
-      placed.push({ point, width });
-      labelPoints.set(b.id, point);
+      return { b, point, width, openWidth, name, active, close };
+    });
+    const placed: { point: Point; width: number; height: number }[] = [];
+    for (const label of [...labels].sort(
+      (a, b) =>
+        Number(b.active) - Number(a.active) ||
+        Number(b.close) - Number(a.close) ||
+        a.point.y - b.point.y,
+    )) {
+      const { point, width } = label;
+      const edge = 4 / scale;
+      if (point.x >= frameLeft && point.x <= frameLeft + frameWidth) {
+        point.x = Math.max(
+          frameLeft + edge + width / 2,
+          Math.min(frameLeft + frameWidth - edge - width / 2, point.x),
+        );
+      }
+      const height = (label.active || label.close ? 37 : 34) / scale;
+      if (point.y >= frameTop)
+        point.y = Math.max(point.y, frameTop + height + edge);
+      for (let attempt = 0; attempt < placed.length; attempt++) {
+        const overlap = placed.find(
+          (previous) =>
+            Math.abs(previous.point.x - point.x) <
+              (previous.width + width) / 2 + edge &&
+            Math.abs(previous.point.y - point.y) <
+              Math.max(height, previous.height) + edge,
+        );
+        if (!overlap) break;
+        point.y = overlap.point.y + height + 2 * edge;
+      }
+      placed.push({ point, width, height });
     }
     return (
       <div className="world-canvas-container" ref={container}>
         <div
-          className="world-surface"
+          className={`world-surface${dragging ? " is-dragging" : ""}`}
           style={{
             width: WORLD.width * fit,
             height: WORLD.height * fit,
@@ -375,11 +467,14 @@ export const WorldCanvas = forwardRef<WorldHandle, Props>(
             height={WORLD.height}
             tabIndex={0}
             role="application"
-            aria-label="Base en píxeles. Toca un edificio para entrar o camina con WASD y las flechas."
+            aria-label={tr(
+              "Base en píxeles. Toca un edificio para entrar o camina con WASD y las flechas.",
+            )}
             onPointerDown={(e) => {
-              if (props.blocked) return;
+              if (props.blocked || !e.isPrimary || e.button !== 0) return;
               e.currentTarget.focus({ preventScroll: true });
               drag.current = {
+                id: e.pointerId,
                 x: e.clientX,
                 y: e.clientY,
                 px: pan.x,
@@ -396,11 +491,13 @@ export const WorldCanvas = forwardRef<WorldHandle, Props>(
               };
               const d = drag.current;
               if (
-                d &&
+                d?.id === e.pointerId &&
+                !props.blocked &&
                 zoom > 1 &&
                 (Math.abs(e.clientX - d.x) > 6 || Math.abs(e.clientY - d.y) > 6)
               ) {
                 d.moved = true;
+                setDragging(true);
                 setPan({
                   x: Math.max(-250, Math.min(250, d.px + e.clientX - d.x)),
                   y: Math.max(-180, Math.min(180, d.py + e.clientY - d.y)),
@@ -408,48 +505,45 @@ export const WorldCanvas = forwardRef<WorldHandle, Props>(
               }
             }}
             onPointerUp={(e) => {
-              if (drag.current && !drag.current.moved) hit(e);
-              drag.current = null;
+              if (drag.current?.id !== e.pointerId) return;
+              if (!drag.current.moved && !props.blocked) hit(e);
+              finishDrag();
               if (e.currentTarget.hasPointerCapture(e.pointerId))
                 e.currentTarget.releasePointerCapture(e.pointerId);
             }}
-            onPointerCancel={() => {
-              drag.current = null;
+            onLostPointerCapture={(e) => {
+              if (drag.current?.id === e.pointerId) finishDrag();
             }}
             onPointerLeave={() => {
               hover.current = null;
             }}
           />
-          {structuresForCity(state.cityId).map((b) => {
-            const point = project({
-              x: b.x + (b.w - 1) / 2,
-              y: b.y + (b.d - 1) / 2,
-            });
-            const isMars = tileIsMars(b.x, b.y, props.transformation),
-              z = isMars ? 0 : terraceHeight(b.x, b.y, state.cityId);
-            const active = props.active === b.id;
+          {labels.map(({ b, point, openWidth, name, active, close }) => {
+            const availableLeft = (point.x - frameLeft) * scale;
+            const availableRight = (frameLeft + frameWidth - point.x) * scale;
+            const textAlignment =
+              availableLeft < openWidth / 2
+                ? "right"
+                : availableRight < openWidth / 2
+                  ? "left"
+                  : undefined;
             return (
               <button
                 key={b.id}
-                className={`building-label ${active ? "mission-active" : ""} ${nearby === b.id ? "nearby" : ""} ${b.id === "garage" && state.solActual !== 28 ? "future-building" : ""}`}
+                className={`building-label ${active ? "mission-active" : ""} ${close ? "nearby" : ""} ${b.id === "garage" && state.solActual !== 28 ? "future-building" : ""}`}
                 style={{
                   left: `${(point.x / WORLD.width) * 100}%`,
-                  top: `${(labelPoints.get(b.id)!.y / WORLD.height) * 100}%`,
+                  top: `${(point.y / WORLD.height) * 100}%`,
+                  scale: 1 / zoom,
                 }}
+                data-expand={textAlignment}
                 disabled={props.blocked}
-                aria-label={`Ir a ${b.name}${active ? ", tu próxima tarea" : ""}`}
+                aria-label={tr(
+                  `Ir a ${b.name}${active ? ", tu próxima tarea" : ""}`,
+                  `Go to ${tr(b.name)}${active ? tr(", tu próxima tarea") : ""}`,
+                )}
                 onClick={() => goTo(b.id)}
               >
-                {active && (
-                  <span className="mission-pointer" aria-hidden="true">
-                    <svg viewBox="0 0 20 22" shapeRendering="crispEdges">
-                      <path
-                        fill="#ffdf37"
-                        d="M6 0h8v10h6v3h-3v3h-3v3h-3v3H9v-3H6v-3H3v-3H0v-3h6z"
-                      />
-                    </svg>
-                  </span>
-                )}
                 <span className="building-icon" aria-hidden="true">
                   {b.id === "refuge"
                     ? "🏠"
@@ -461,20 +555,7 @@ export const WorldCanvas = forwardRef<WorldHandle, Props>(
                           ? "📡"
                           : "🚙"}
                 </span>
-                <span className="building-name">
-                  {isMars
-                    ? b.short
-                    : b.id === "refuge"
-                      ? "PLAZA CENTRAL"
-                      : b.id === "greenhouse"
-                        ? "JARDÍN BOTÁNICO"
-                        : b.id === "solar"
-                          ? "ESTACIÓN ELÉCTRICA"
-                          : b.id === "probe"
-                            ? "TORRE DE RADIO"
-                            : "GARAJE"}
-                </span>
-                {active && <b className="mission-mark">!</b>}
+                <span className="building-name">{name}</span>
               </button>
             );
           })}
@@ -485,7 +566,7 @@ export const WorldCanvas = forwardRef<WorldHandle, Props>(
               top: `${((avatar.y - avatarZ - 42) / WORLD.height) * 100}%`,
             }}
           >
-            TÚ <i />
+            {tr("TÚ")} <i />
           </span>
         </div>
       </div>

@@ -1,8 +1,9 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { useGame } from "../GameProvider";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useGame, useTranslate } from "../GameProvider";
 import { LESSONS, HELP_COPY, type LessonSol } from "@/lib/learning";
 import type { CityId } from "@/lib/game";
+import { LanguageButton } from "./LanguageButton";
 import { Chispa } from "./Chispa";
 export function PixelMedal({
   sol,
@@ -11,6 +12,7 @@ export function PixelMedal({
   sol: LessonSol;
   locked?: boolean;
 }) {
+  const tr = useTranslate();
   const colors: Record<LessonSol, string> = {
     0: "#ba9cff",
     1: "#5ce1e6",
@@ -22,7 +24,7 @@ export function PixelMedal({
     <svg
       viewBox="0 0 32 38"
       role="img"
-      aria-label={locked ? "Medalla por descubrir" : LESSONS[sol].medal}
+      aria-label={locked ? tr("Medalla por descubrir") : tr(LESSONS[sol].medal)}
       shapeRendering="crispEdges"
     >
       <path
@@ -52,48 +54,83 @@ export function PixelMedal({
     </svg>
   );
 }
-const medalSols: LessonSol[] = [1, 8, 18, 28];
+export const MEDAL_SOLS = [1, 8, 18, 28] as const;
+
+const CONFETTI_COLORS = ["#ffe68b", "#80edff", "#ff9bac", "#b4ef90"];
+
+function MedalCelebration({ sol }: { sol: LessonSol }) {
+  return (
+    <div className="medal-spotlight">
+      <div className="medal-confetti" aria-hidden="true">
+        {Array.from({ length: 20 }, (_, i) => {
+          const angle = (i * Math.PI * 2) / 20;
+          const spread = 58 + (i % 5) * 9;
+          const style = {
+            "--bit-x": `${Math.round(Math.cos(angle) * spread)}px`,
+            "--bit-y": `${Math.round(Math.sin(angle) * spread * 0.7)}px`,
+            "--bit-color": CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+            "--bit-delay": `${(i % 4) * 65}ms`,
+          } as CSSProperties;
+          return (
+            <i
+              key={i}
+              className={i % 3 ? "confetti-square" : "pixel-star"}
+              style={style}
+            />
+          );
+        })}
+      </div>
+      <PixelMedal sol={sol} />
+    </div>
+  );
+}
 export function MedalBar() {
+  const tr = useTranslate();
   const { state: s } = useGame();
   const [open, setOpen] = useState(false);
   return (
     <section
       className={`medal-album ${open ? "album-open" : ""}`}
-      aria-label="Álbum de medallas"
+      aria-label={tr("Álbum de medallas")}
     >
       <button
         className="album-toggle"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
       >
-        <span>
-          MI ÁLBUM <b>{s.learning.answered.filter((n) => n !== 0).length}/4</b>
+        <span className="album-count">
+          {tr("Medallas")}{" "}
+          <b>{s.learning.answered.filter((n) => n !== 0).length}/4</b>
         </span>
-        <span className="medal-icons">
-          {medalSols.map((sol) => (
-            <PixelMedal
-              key={sol}
-              sol={sol}
-              locked={!s.learning.answered.includes(sol)}
-            />
-          ))}
+        <span className="album-miniatures" aria-hidden="true">
+          {MEDAL_SOLS.map((sol) => {
+            const earned = s.learning.answered.includes(sol);
+            return (
+              <span key={sol} className="album-miniature" data-earned={earned}>
+                <PixelMedal sol={sol} locked={!earned} />
+              </span>
+            );
+          })}
         </span>
       </button>
       {open && (
         <div className="album-content">
-          <strong>¡Aprende y colecciona!</strong>
-          {medalSols.map((sol) => (
+          <strong>{tr("¡Aprende y colecciona!")}</strong>
+          {MEDAL_SOLS.map((sol) => (
             <div key={sol}>
               <PixelMedal
                 sol={sol}
                 locked={!s.learning.answered.includes(sol)}
               />
               <span>
-                {LESSONS[sol].medal}
+                {tr(LESSONS[sol].medal)}
                 <small>
                   {s.learning.answered.includes(sol)
-                    ? "¡La ganaste!"
-                    : `Te espera en el día ${sol}`}
+                    ? tr("¡La ganaste!")
+                    : tr(
+                        `Te espera en el día ${sol}`,
+                        `Waiting for you on day ${sol}`,
+                      )}
                 </small>
               </span>
             </div>
@@ -110,23 +147,30 @@ export function SciencePlayCard({
   mission: 0 | 1 | 8 | 18 | 28;
   cityId?: CityId | null;
 }) {
+  const tr = useTranslate();
   const origin =
     cityId === "uyuni"
       ? [
           "☀️ → ⚡",
-          "¡Sol que carga!",
-          "Uyuni recibe mucha luz del Sol. En el juego, tus paneles cargan más.",
+          tr("¡Sol que carga!"),
+          tr(
+            "Uyuni recibe mucha luz del Sol. En el juego, tus paneles cargan más.",
+          ),
         ]
       : cityId === "la-paz"
         ? [
             "🏔️ + 🧥 → ♥",
-            "¡Una manta para Marte!",
-            "La Paz conoce el frío de altura. En el juego, guardamos mejor el calor.",
+            tr("¡Una manta para Marte!"),
+            tr(
+              "La Paz conoce el frío de altura. En el juego, guardamos mejor el calor.",
+            ),
           ]
         : [
             "🌴 + 💧 → 🌱",
-            "¡Agua para empezar!",
-            "Santa Cruz es cálida y verde. En el juego llevamos más agua, pero perdemos calor.",
+            tr("¡Agua para empezar!"),
+            tr(
+              "Santa Cruz es cálida y verde. En el juego llevamos más agua, pero perdemos calor.",
+            ),
           ];
   const card =
     mission === 0
@@ -134,42 +178,51 @@ export function SciencePlayCard({
       : mission === 1
         ? [
             "💨 + 💨 → 💧 → 🌱",
-            "¡De gases a gotitas!",
-            "En el espacio, una máquina junta gases y recupera agua. Aquí deja el agua en verde y cuida el aire.",
+            tr("¡De gases a gotitas!"),
+            tr(
+              "En el espacio, una máquina junta gases y recupera agua. Aquí deja el agua en verde y cuida el aire.",
+            ),
           ]
         : mission === 8
           ? [
               "🌫️ → ☀️ → ⚡",
-              "¡El polvo es una nube de tierra!",
-              "Tapa la luz y cargamos menos. Afuera, el traje ayuda contra los rayos invisibles.",
+              tr("¡El polvo es una nube de tierra!"),
+              tr(
+                "Tapa la luz y cargamos menos. Afuera, el traje ayuda contra los rayos invisibles.",
+              ),
             ]
           : mission === 18
             ? [
                 "☀️ → ✨ → 🛡️",
-                "¡El Sol también estornuda!",
-                "NASA ve sus llamaradas: son estornudos de energía. Nuestro escudo es de fantasía.",
+                tr("¡El Sol también estornuda!"),
+                tr(
+                  "NASA ve sus llamaradas: son estornudos de energía. Nuestro escudo es de fantasía.",
+                ),
               ]
             : [
                 "🚲 ↗️ = ⚡⚡",
-                "¡Como subir una cuesta en bici!",
-                "Subir pide más energía. Por el camino largo llega la noche: ¡enciende el calor!",
+                tr("¡Como subir una cuesta en bici!"),
+                tr(
+                  "Subir pide más energía. Por el camino largo llega la noche: ¡enciende el calor!",
+                ),
               ];
   return (
     <aside
       className={`science-play-card science-${mission}`}
-      aria-label="Una idea para aprender"
+      aria-label={tr("Una idea para aprender")}
     >
       <div className="science-pictures" aria-hidden="true">
         {card[0]}
       </div>
       <div>
-        <strong>{card[1]}</strong>
-        <p>{card[2]}</p>
+        <strong>{tr(card[1])}</strong>
+        <p>{tr(card[2])}</p>
       </div>
     </aside>
   );
 }
 export function LearningLayer() {
+  const tr = useTranslate();
   const { state: s, act } = useGame();
   const dialog = useRef<HTMLDialogElement>(null);
   const help = s.support,
@@ -191,9 +244,12 @@ export function LearningLayer() {
     <dialog
       ref={dialog}
       className="learning-dialog"
-      aria-label={help ? "Chispa te ayuda" : "Pregunta de Chispa"}
+      aria-label={help ? tr("Chispa te ayuda") : tr("Pregunta de Chispa")}
       onCancel={(e) => e.preventDefault()}
     >
+      <div className="dialog-language">
+        <LanguageButton />
+      </div>
       <div className="learning-header">
         <Chispa
           mood={
@@ -207,13 +263,13 @@ export function LearningLayer() {
           }
         />
         <div>
-          <span>CHISPA · TU COMPAÑERO</span>
+          <span>{tr("CHISPA · TU COMPAÑERO")}</span>
           <h2>
             {help
-              ? "¡Lo arreglamos juntos!"
+              ? tr("¡Lo arreglamos juntos!")
               : correct
-                ? "¡Lo descubriste!"
-                : q?.title}
+                ? tr("¡Lo descubriste!")
+                : tr(q?.title ?? "")}
           </h2>
         </div>
       </div>
@@ -224,11 +280,15 @@ export function LearningLayer() {
           </div>
           <p>
             {help.corrected
-              ? "¡Listo! Usamos mi reserva de ayuda. Tú decides cuándo seguir."
-              : copy.text}
+              ? tr(
+                  "¡Listo! Usamos mi reserva de ayuda. Tú decides cuándo seguir.",
+                )
+              : tr(copy.text)}
           </p>
           <p className="gentle-note">
-            Todo está en pausa. Mis reservas nos ayudan a aprender sin perder.
+            {tr(
+              "Todo está en pausa. Mis reservas nos ayudan a aprender sin perder.",
+            )}
           </p>
           <button
             className="launch-button easy-primary"
@@ -240,27 +300,29 @@ export function LearningLayer() {
               )
             }
           >
-            {help.corrected ? "¡SEGUIR EXPLORANDO!" : copy.fix}
+            {help.corrected ? tr("¡SEGUIR EXPLORANDO!") : tr(copy.fix)}
           </button>
         </>
       ) : q && sol !== null ? (
         <>
           {correct ? (
             <div className="medal-earned">
-              <PixelMedal sol={sol} />
-              <h3>{q.medal}</h3>
-              <p>{q.explain}</p>
+              <MedalCelebration sol={sol} />
+              <h3>{tr(q.medal)}</h3>
+              <p>{tr(q.explain)}</p>
               <button
                 className="launch-button easy-primary"
                 onClick={() => act({ type: "QUIZ_CONTINUE" })}
               >
-                {sol === 28 ? "¡VER MI DIPLOMA!" : "¡SEGUIR LA AVENTURA!"}{" "}
+                {sol === 28
+                  ? tr("¡VER MI DIPLOMA!")
+                  : tr("¡SEGUIR LA AVENTURA!")}{" "}
                 <span>→</span>
               </button>
             </div>
           ) : (
             <>
-              <p className="quiz-question">{q.question}</p>
+              <p className="quiz-question">{tr(q.question)}</p>
               <div className="quiz-answers">
                 {q.answers.map((a, i) => (
                   <button
@@ -268,14 +330,19 @@ export function LearningLayer() {
                     onClick={() => act({ type: "QUIZ_ANSWER", answer: i })}
                   >
                     <b>{["A", "B", "C"][i]}</b>
-                    {a}
+                    {tr(a)}
                   </button>
                 ))}
               </div>
               <p className="quiz-feedback" role="status">
                 {s.learning.feedback === "retry"
-                  ? `¡Buen intento! ${q.explain} Prueba otra vez.`
-                  : "Puedes probar las veces que quieras. ¡Aprender es explorar!"}
+                  ? tr(
+                      `¡Buen intento! ${q.explain} Prueba otra vez.`,
+                      `Good try! ${tr(q.explain)} Try again.`,
+                    )
+                  : tr(
+                      "Puedes probar las veces que quieras. ¡Aprender es explorar!",
+                    )}
               </p>
             </>
           )}

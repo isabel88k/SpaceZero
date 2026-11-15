@@ -1,4 +1,5 @@
 "use client";
+import { useTranslate } from "@/components/GameProvider";
 import { DEPARTMENTS } from "@/lib/regions";
 import { CITIES, type CityId } from "@/lib/game";
 const colors = [
@@ -17,15 +18,16 @@ const xy = ([lon, lat]: number[]) => ({
   y: 12 + (-9.5 - lat) * 22,
 });
 export function BoliviaMap({ onChoose }: { onChoose: (id: CityId) => void }) {
+  const tr = useTranslate();
   return (
     <div
       className="bolivia-map"
-      aria-label="Mapa de Bolivia. Elige un pin brillante."
+      aria-label={tr("Mapa de Bolivia. Elige un pin brillante.")}
     >
       <svg
         viewBox="0 0 300 310"
         role="img"
-        aria-label="Los nueve departamentos de Bolivia"
+        aria-label={tr("Los nueve departamentos de Bolivia")}
         shapeRendering="crispEdges"
       >
         {DEPARTMENTS.map((d, i) => (
@@ -54,7 +56,7 @@ export function BoliviaMap({ onChoose }: { onChoose: (id: CityId) => void }) {
             className={`map-pin pin-${c.id}`}
             style={{ left: `${p.x / 3}%`, top: `${p.y / 3.1}%` }}
             onClick={() => onChoose(c.id)}
-            aria-label={`Elegir ${c.name}`}
+            aria-label={tr(`Elegir ${c.name}`, `Choose ${tr(c.name)}`)}
           >
             <i aria-hidden="true">✦</i>
             <span>
@@ -67,7 +69,7 @@ export function BoliviaMap({ onChoose }: { onChoose: (id: CityId) => void }) {
           </button>
         );
       })}
-      <small>BOLIVIA · TU AVENTURA EMPIEZA AQUÍ</small>
+      <small>{tr("BOLIVIA · TU AVENTURA EMPIEZA AQUÍ")}</small>
     </div>
   );
 }

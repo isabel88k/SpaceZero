@@ -1,11 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useGame } from "./GameProvider";
-import { NasaFact } from "./NasaFact";
+import { useGame, useTranslate } from "./GameProvider";
 import { advanceStorm } from "@/lib/simulation";
 import { SAFE_WATER } from "@/lib/ux";
 import type { SystemId } from "@/lib/game";
 export function Greenhouse() {
+  const tr = useTranslate();
   const { state: s, act } = useGame(),
     g = s.greenhouse,
     r = s.resources,
@@ -17,15 +17,15 @@ export function Greenhouse() {
   return (
     <div className="easy-mission easy-water">
       <p className="mission-instruction">
-        Objetivo: pon el agua en verde y haz crecer las plantas.
+        {tr("Pon el agua en verde para cultivar.")}
       </p>
-      <h3>Máquina de Agua y Aire</h3>
+      <h3>{tr("Máquina de Agua y Aire")}</h3>
       <p className="short-copy">
-        Más agua usa más aire. La luz ayuda a las plantas.
+        {tr("Más agua usa aire. Más luz usa batería.")}
       </p>
       <label className="easy-slider">
         <span>
-          Agua para las plantas <strong>{g.hydrogen}%</strong>
+          {tr("Agua para las plantas")} <strong>{g.hydrogen}%</strong>
         </span>
         <div className="safe-track">
           <span
@@ -41,7 +41,7 @@ export function Greenhouse() {
             max={100}
             value={g.hydrogen}
             disabled={ended}
-            aria-label="Agua para las plantas"
+            aria-label={tr("Agua para las plantas")}
             onChange={(e) =>
               act({
                 type: "CALIBRATE",
@@ -52,12 +52,13 @@ export function Greenhouse() {
           />
         </div>
         <span className={`safe-zone-label ${safe ? "in-zone" : ""}`}>
-          ■ ZONA SEGURA: 30–50% {safe ? "✓" : "← mueve aquí el control"}
+          {tr("■ ZONA SEGURA: 30–50%")}{" "}
+          {safe ? "✓" : tr("← mueve aquí el control")}
         </span>
       </label>
       <label className="easy-slider">
         <span>
-          Luz para las plantas <strong>{g.uv}%</strong>
+          {tr("Luz para las plantas")} <strong>{g.uv}%</strong>
         </span>
         <input
           type="range"
@@ -65,7 +66,7 @@ export function Greenhouse() {
           max={100}
           value={g.uv}
           disabled={ended}
-          aria-label="Luz para las plantas"
+          aria-label={tr("Luz para las plantas")}
           onChange={(e) =>
             act({
               type: "CALIBRATE",
@@ -74,37 +75,43 @@ export function Greenhouse() {
             })
           }
         />
-        <small>Prueba con 45%. Más luz gasta más batería.</small>
+        <small>{tr("Prueba con 45%. Más luz gasta más batería.")}</small>
       </label>
       <div className="easy-readouts">
-        <Readout label="AGUA" value={r.agua} />
-        <Readout label="AIRE" value={r.oxigeno} />
-        <Readout label="BATERÍA" value={r.energia} />
+        <Readout label={tr("AGUA")} value={r.agua} />
+        <Readout label={tr("AIRE")} value={r.oxigeno} />
+        <Readout label={tr("BATERÍA")} value={r.energia} />
       </div>
       <div className="easy-progress">
         <span>
-          Plantas creciendo <b>{Math.round(g.growth)}%</b>
+          {tr("Plantas creciendo")} <b>{Math.round(g.growth)}%</b>
         </span>
-        <progress max={100} value={g.growth} aria-label="Plantas creciendo" />
-        <small>Necesitamos llegar a la marca del 50%.</small>
+        <progress
+          max={100}
+          value={g.growth}
+          aria-label={tr("Plantas creciendo")}
+        />
+        <small>{tr("Necesitamos llegar a la marca del 50%.")}</small>
       </div>
       <div
         className={`easy-status ${danger ? "is-danger" : safe ? "is-safe" : ""}`}
         role="status"
       >
-        {g.message || "Deja el agua en verde. Luego pulsa «Empezar»."}
+        {tr(g.message || "Deja el agua en verde. Luego pulsa «Empezar».")}
       </div>
       <div className="easy-time">
-        <span>{g.elapsed} / 25 segundos</span>
-        <progress max={25} value={g.elapsed} aria-label="Tiempo de cultivo" />
+        <span>
+          {g.elapsed} {tr("/ 25 segundos")}
+        </span>
+        <progress
+          max={25}
+          value={g.elapsed}
+          aria-label={tr("Tiempo de cultivo")}
+        />
       </div>
       <p className="short-copy easy-tip">
-        Puedes pausar. Al cerrar esta ventana, el cultivo espera.
+        {tr("Puedes pausar. Al cerrar esta ventana, el cultivo espera.")}
       </p>
-      <NasaFact
-        mission="water"
-        onOpen={() => act({ type: "GREENHOUSE_PAUSE" })}
-      />
     </div>
   );
 }
@@ -135,8 +142,10 @@ const SYSTEMS: { id: SystemId; icon: string; name: string; tip: string }[] = [
   },
 ];
 export function Storm({ onCycle }: { onCycle?: () => void } = {}) {
+  const tr = useTranslate();
   const { state: s, act } = useGame(),
     [notice, setNotice] = useState(""),
+    [overloadAttempt, setOverloadAttempt] = useState(0),
     storm = s.storm,
     ended = ["complete", "failed"].includes(storm.status),
     count = Object.values(storm.allocation).filter((v) => v > 0).length,
@@ -146,6 +155,7 @@ export function Storm({ onCycle }: { onCycle?: () => void } = {}) {
     const on = storm.allocation[id] > 0;
     if (!on && count >= 2) {
       setNotice("Apaga una ayuda antes de encender otra.");
+      setOverloadAttempt((attempt) => attempt + 1);
       return;
     }
     setNotice("");
@@ -154,13 +164,32 @@ export function Storm({ onCycle }: { onCycle?: () => void } = {}) {
   return (
     <div className="easy-mission easy-storm">
       <p className="mission-instruction">
-        Solo puedes tener 2 encendidos al mismo tiempo.
+        {tr("Solo puedes tener 2 encendidos al mismo tiempo.")}
       </p>
       <div className="easy-round">
-        <h3>¿Qué cuidamos ahora?</h3>
-        <span>RONDA {Math.min(3, storm.cycle + 1)} / 3</span>
+        <h3>{tr("¿Qué cuidamos ahora?")}</h3>
+        <span>
+          {tr("RONDA")} {Math.min(3, storm.cycle + 1)} / 3
+        </span>
       </div>
-      <p className="short-copy">Toca una tarjeta para encenderla o apagarla.</p>
+      <p className="short-copy">
+        {tr("Toca una tarjeta para encenderla o apagarla.")}
+      </p>
+      <div className="storm-budget-feedback">
+        <p className="switch-count" aria-live="polite">
+          <span
+            key={overloadAttempt}
+            className={notice ? "switch-count-overload" : undefined}
+          >
+            {count} {tr("de 2 encendidos")}
+          </span>
+        </p>
+        {notice && (
+          <p className="easy-notice short-copy" role="alert">
+            {tr(notice)}
+          </p>
+        )}
+      </div>
       <div className="easy-system-grid">
         {SYSTEMS.map((sys) => {
           const on = storm.allocation[sys.id] > 0;
@@ -170,7 +199,8 @@ export function Storm({ onCycle }: { onCycle?: () => void } = {}) {
               key={sys.id}
               role="switch"
               aria-checked={on}
-              aria-label={`${sys.name}: ${on ? "ENCENDIDO" : "APAGADO"}`}
+              title={tr(sys.tip)}
+              aria-label={`${tr(sys.name)}: ${on ? tr("ENCENDIDO") : tr("APAGADO")}`}
               className={`easy-system ${on ? "switched-on" : ""}`}
               disabled={ended}
               onClick={() => toggle(sys.id)}
@@ -178,40 +208,34 @@ export function Storm({ onCycle }: { onCycle?: () => void } = {}) {
               <span className="easy-system-icon" aria-hidden="true">
                 {sys.icon}
               </span>
-              <strong>{sys.name}</strong>
-              <small>{sys.tip}</small>
+              <strong>{tr(sys.name)}</strong>
+              <small>{tr(sys.tip)}</small>
               <span className="binary-state">
                 <i />
-                {on ? "ENCENDIDO" : "APAGADO"}
+                {on ? tr("ENCENDIDO") : tr("APAGADO")}
+              </span>
+              <span className="system-power-line" aria-hidden="true">
+                <i />
               </span>
             </button>
           );
         })}
       </div>
-      <p className="switch-count" aria-live="polite">
-        {count} de 2 encendidos
-      </p>
-      {notice && (
-        <p className="easy-notice short-copy" role="alert">
-          {notice}
-        </p>
-      )}
       <div className="easy-readouts">
-        <Readout label="BATERÍA DESPUÉS" value={f.resources.energia} />
-        <Readout label="AIRE DESPUÉS" value={f.resources.oxigeno} />
+        <Readout label={tr("BATERÍA DESPUÉS")} value={f.resources.energia} />
+        <Readout label={tr("AIRE DESPUÉS")} value={f.resources.oxigeno} />
         <Readout
-          label="CALOR DENTRO"
+          label={tr("CALOR DENTRO")}
           value={f.resources.temperaturaCabina}
           unit="°C"
         />
       </div>
       <div className="easy-status" role="status">
-        {storm.message || "Todo espera hasta que pulses «Pasar ronda»."}
+        {tr(storm.message || "Todo espera hasta que pulses «Pasar ronda».")}
       </div>
       <p className="short-copy easy-tip">
-        Enciende Plantas alguna ronda para no perder la comida.
+        {tr("Enciende Plantas alguna ronda para no perder la comida.")}
       </p>
-      <NasaFact mission="storm" />
     </div>
   );
 }

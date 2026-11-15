@@ -125,25 +125,6 @@
   background: #39294b;
   border: 1px solid #bba1cd;
 }
-.kids-game .prologue-steps {
-  background: #2b2340;
-  padding: 7px 24px;
-  gap: 10px;
-}
-.kids-game .prologue-steps button {
-  background: #3e325b;
-  border: 2px solid #9178a8;
-  color: #fcefff;
-  min-height: 40px;
-}
-.kids-game .prologue-steps button[aria-current="step"] {
-  background: #6e5185;
-  border-color: #ffdc84;
-  color: #fff0b0;
-}
-.kids-game .prologue-steps button:disabled {
-  opacity: 0.45;
-}
 .kids-game .origin-overlay {
   inset: 16px 22px auto;
   transform: none;
@@ -416,21 +397,46 @@
   width: 64px;
   height: 64px;
   overflow: visible;
-  animation: chispa-float 1.3s steps(3) infinite;
   filter: drop-shadow(0 4px #14132755);
 }
+.chispa-happy {
+  animation: chispa-float 2.4s ease-in-out infinite;
+}
 .chispa-alert {
-  animation: chispa-wiggle 0.8s steps(2) infinite;
+  animation: chispa-wiggle 0.9s linear infinite;
 }
 .chispa-celebrate {
-  animation: chispa-party 0.7s steps(3) infinite;
+  animation: chispa-party 1.35s ease-in-out infinite;
 }
 .chispa-eyes {
-  animation: chispa-blink 4s steps(1) infinite;
+  fill: #80fff2;
+  transform-box: fill-box;
   transform-origin: center;
 }
+.chispa-happy .chispa-eyes {
+  animation: chispa-blink 4.7s ease-in-out infinite;
+}
+.chispa-alert .chispa-eyes {
+  fill: #ff8874;
+  animation: chispa-alert-eyes 1.25s ease-in-out infinite;
+}
+.chispa-celebrate .chispa-eyes {
+  fill: #fff79f;
+}
+.chispa-wave {
+  transform-origin: 24px 4px;
+  animation: chispa-signal 1.45s ease-out infinite;
+}
+.chispa-wave-outer {
+  opacity: 0.55;
+  animation-delay: 0.3s;
+}
+.chispa-spark {
+  transform-origin: center;
+  animation: chispa-sparks 1.35s ease-out infinite;
+}
 .chispa-antenna {
-  animation: pin-glow 1.4s steps(3) infinite;
+  animation: pin-glow 2s ease-in-out infinite;
 }
 .kids-game .dialogue-portrait > span {
   font: 7px var(--pixel);
@@ -499,10 +505,11 @@
   padding: 13px 18px;
   white-space: normal;
 }
-.kids-game .launch-button:hover,
-.learning-dialog .launch-button:hover {
-  background: #e2ffb9;
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .kids-game .launch-button:hover:not(:disabled),
+  .learning-dialog .launch-button:hover:not(:disabled) {
+    background: #e2ffb9;
+  }
 }
 .kids-game .easy-slider > span {
   font-size: 22px;
@@ -635,11 +642,11 @@
 .medal-earned {
   text-align: center;
 }
-.medal-earned > svg {
+.medal-spotlight > svg {
   width: 105px;
   height: 125px;
   margin: 0 auto;
-  animation: medal-pop 0.5s steps(4) 1;
+  animation: medal-pop 680ms ease-out both;
 }
 .medal-earned h3 {
   font: 13px/1.8 var(--pixel);
@@ -808,31 +815,107 @@
   }
 }
 @keyframes chispa-party {
-  50% {
-    transform: translateY(-7px) rotate(5deg);
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  18% {
+    transform: translateY(1px) scale(1.06, 0.94);
+  }
+  45% {
+    transform: translateY(-9px) scale(0.97, 1.05) rotate(-4deg);
+  }
+  68% {
+    transform: translateY(0) scale(1.05, 0.95);
+  }
+  82% {
+    transform: translateY(-2px) scale(1);
   }
 }
 @keyframes chispa-wiggle {
-  50% {
+  0%,
+  33%,
+  100% {
+    transform: translateX(0);
+  }
+  8%,
+  24% {
+    transform: translateX(-2px);
+  }
+  16% {
     transform: translateX(2px);
   }
 }
 @keyframes chispa-blink {
   0%,
-  46%,
-  50%,
+  42%,
+  48%,
   100% {
-    opacity: 1;
+    transform: scaleY(1);
+  }
+  45% {
+    transform: scaleY(0.18);
+  }
+}
+@keyframes chispa-alert-eyes {
+  0%,
+  100% {
+    fill: #ff8874;
+    transform: scaleY(1);
   }
   48% {
-    opacity: 0.1;
+    fill: #ffce77;
+    transform: scaleY(0.38);
+  }
+  58% {
+    transform: scaleY(1);
+  }
+}
+@keyframes chispa-signal {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  25% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.3);
+  }
+}
+@keyframes chispa-sparks {
+  0%,
+  16% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  35% {
+    opacity: 1;
+  }
+  80%,
+  100% {
+    opacity: 0;
+    transform: scale(1.22);
   }
 }
 @keyframes medal-pop {
-  from {
-    transform: scale(0.5) rotate(-10deg);
+  0% {
+    opacity: 0;
+    transform: scale(0.32) rotate(-12deg);
   }
-  to {
+  53% {
+    opacity: 1;
+    transform: scale(1.18) rotate(4deg);
+  }
+  75% {
+    transform: scale(0.93) rotate(-2deg);
+  }
+  90% {
+    transform: scale(1.04);
+  }
+  100% {
+    opacity: 1;
     transform: scale(1);
   }
 }
@@ -1067,14 +1150,6 @@
   .science-play-card strong {
     font-size: 19px;
   }
-  .kids-game .prologue-steps {
-    padding: 8px;
-    gap: 6px;
-  }
-  .kids-game .prologue-steps button {
-    font-size: 5.5px;
-    min-height: 48px;
-  }
   .learning-dialog {
     padding: 19px;
   }
@@ -1127,12 +1202,11 @@
   .chispa,
   .chispa-eyes,
   .chispa-antenna,
+  .chispa-wave,
+  .chispa-spark,
   .map-pin i,
-  .medal-earned > svg {
+  .medal-spotlight > svg {
     animation: none !important;
-  }
-  .kids-game .launch-button:hover {
-    transform: none;
   }
 }
 /* Keep the first choice and the whole island visible on a laptop. */
@@ -1155,17 +1229,6 @@
   }
   .kids-game .mission-goal {
     padding-right: 290px;
-  }
-  .kids-game:has(.prologue-steps) .world-hud {
-    display: none;
-  }
-  .kids-game .prologue-steps {
-    padding-top: 5px;
-    padding-bottom: 5px;
-  }
-  .kids-game .prologue-steps button {
-    min-height: 36px;
-    padding: 7px;
   }
   .kids-game .origin-overlay-header {
     display: block;
@@ -1209,9 +1272,6 @@
     font-size: 15px;
     min-width: 15px;
   }
-}
-.kids-game:has(.prologue-steps) .world-hud {
-  display: none;
 }
 .kids-game .solar-emergency-heading > .chispa {
   min-width: 58px;
@@ -1266,46 +1326,6 @@
     animation: none !important;
   }
 }
-/* A single automatic, twenty-second story clock. */
-.prologue-timeline {
-  display: grid !important;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
-  gap: 7px !important;
-  align-items: center;
-  padding: 8px 20px !important;
-  flex-shrink: 0;
-}
-.prologue-timeline > div {
-  padding: 9px 12px;
-  border: 2px solid #73608b;
-  background: #302541;
-  color: #cab9de;
-  font: 17px/1.2 var(--terminal);
-}
-.prologue-timeline > div > b {
-  color: #ffe6a3;
-  margin-right: 8px;
-  font-weight: 400;
-}
-.prologue-timeline > div[aria-current="step"] {
-  background: #594168;
-  border-color: #ffdc83;
-  color: #fff3d6;
-  box-shadow: 2px 2px #1c1530;
-}
-.prologue-timeline > .prologue-clock {
-  font: 22px var(--terminal);
-  color: #ffdf8d;
-  min-width: 90px;
-  text-align: center;
-}
-.prologue-timeline > small {
-  grid-column: 1/-1;
-  font: 12px/1.2 var(--terminal);
-  color: #d9c4e9;
-  text-align: center;
-  letter-spacing: 0.8px;
-}
 .prologue-narrative .world-dialogue .dialogue-copy p {
   max-height: none;
   -webkit-line-clamp: unset;
@@ -1317,139 +1337,104 @@
   -webkit-line-clamp: unset;
   overflow: visible;
 }
+/* Preserve the camera transform and shake only the world, not its controls. */
 .iso-prologue-alert {
+  --impact-travel: 16px;
+  --tremor-x: 4px;
   isolation: isolate;
 }
 .iso-prologue-alert::after {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: 90;
-  pointer-events: none;
-  background: #f3292529;
-  animation: prologue-red 1.5s steps(2, end) infinite;
-}
-.iso-prologue-alert .world-surface {
-  animation: prologue-shake 0.65s steps(3, end) infinite;
-}
-.iso-prologue-alert .world-dialogue {
-  border-color: #ff9c80;
-  background: #3d2039;
-}
-.prologue-danger-card {
-  position: fixed;
-  top: 43%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: min(640px, calc(100% - 32px));
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  flex-wrap: wrap;
-  padding: 22px;
-  background: #391f34f5;
-  border: 4px solid #ffb39a;
-  box-shadow: 7px 7px #200f2ac4;
   z-index: 40;
   pointer-events: none;
-  color: #fff4d9;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    #f9423320 20%,
+    #64123377 75%,
+    #220817bc
+  );
+  opacity: 0.65;
+  animation: prologue-vignette 2.25s ease-in-out infinite alternate;
 }
-.prologue-danger-card > .chispa {
-  width: 76px;
-  height: 76px;
-  flex-shrink: 0;
+.iso-prologue-alert .world-surface {
+  animation: prologue-tremor 1.45s linear infinite;
 }
-.prologue-danger-card > div {
-  flex: 1;
-  min-width: 200px;
+.iso-prologue-alert[data-prologue-stage="collapse"] {
+  --tremor-x: 7px;
 }
-.prologue-danger-card strong {
-  font: 23px/1.6 var(--pixel);
-  color: #ffde86;
+.iso-prologue-alert[data-prologue-stage="collapse"]::after {
+  animation: prologue-darken 0.9s ease-out forwards;
 }
-.prologue-danger-card p {
-  font: 23px/1.2 var(--terminal);
-  margin: 10px 0 14px;
-  color: #fff6e6;
+.iso-prologue-alert[data-prologue-stage="collapse"] .world-surface {
+  animation:
+    prologue-impact 0.58s ease-out both,
+    prologue-tremor 1.25s linear 0.58s infinite;
 }
-.prologue-danger-card small {
-  font: 13px/1.3 var(--terminal);
-  display: block;
-  color: #eac4e7;
-  letter-spacing: 0.6px;
-}
-.prologue-danger-card progress {
-  width: 100%;
-  height: 16px;
-  accent-color: #ffcf69;
-}
-@keyframes prologue-red {
-  0%,
-  100% {
-    background: #f329251c;
+@keyframes prologue-vignette {
+  from {
+    opacity: 0.52;
   }
-  50% {
-    background: #f329253d;
+  to {
+    opacity: 0.76;
   }
 }
-@keyframes prologue-shake {
+@keyframes prologue-darken {
+  from {
+    opacity: 0.64;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes prologue-tremor {
   0%,
+  53%,
+  80%,
   100% {
     translate: 0 0;
   }
-  33% {
-    translate: 2px -1px;
+  58% {
+    translate: var(--tremor-x) -2px;
   }
-  66% {
-    translate: -2px 1px;
+  64% {
+    translate: calc(-1 * var(--tremor-x)) 3px;
+  }
+  71% {
+    translate: calc(var(--tremor-x) * 0.45) -1px;
+  }
+}
+@keyframes prologue-impact {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+  18% {
+    translate: calc(-1 * var(--impact-travel)) 6px;
+    rotate: -1.8deg;
+  }
+  38% {
+    translate: calc(var(--impact-travel) * 0.8) -5px;
+    rotate: 1.3deg;
+  }
+  58% {
+    translate: calc(var(--impact-travel) * -0.42) 3px;
+    rotate: -0.6deg;
+  }
+  75% {
+    translate: calc(var(--impact-travel) * 0.2) -1px;
+    rotate: 0.25deg;
   }
 }
 @media (max-width: 760px) {
-  .prologue-timeline {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    padding: 8px !important;
-    gap: 6px !important;
+  .iso-prologue-alert {
+    --impact-travel: 9px;
+    --tremor-x: 3px;
   }
-  .prologue-timeline > div {
-    padding: 7px 5px;
-    font-size: 16px;
-    min-height: 52px;
-  }
-  .prologue-timeline > div > b {
-    display: block;
-    font-size: 16px;
-    margin: 0 0 2px;
-  }
-  .prologue-timeline > .prologue-clock {
-    grid-column: 1/-1;
-    font-size: 20px;
-  }
-  .prologue-timeline > small {
-    font-size: 11px;
-  }
-  .prologue-danger-card {
-    gap: 12px;
-    padding: 17px;
-    top: 44%;
-  }
-  .prologue-danger-card > .chispa {
-    width: 50px;
-    height: 50px;
-    position: absolute;
-    right: 18px;
-    top: 16px;
-  }
-  .prologue-danger-card strong {
-    font-size: 20px;
-    padding-right: 60px;
-  }
-  .prologue-danger-card p {
-    font-size: 21px;
-    line-height: 1.15;
-    margin: 15px 0 12px;
-  }
-  .prologue-danger-card small {
-    font-size: 12px;
+  .iso-prologue-alert[data-prologue-stage="collapse"] {
+    --tremor-x: 5px;
   }
   .prologue-narrative .world-dialogue .dialogue-copy p {
     font-size: 20px;
@@ -1459,7 +1444,7 @@
 @media (prefers-reduced-motion: reduce) {
   .iso-prologue-alert::after {
     animation: none;
-    background: #f3292529;
+    opacity: 0.62;
   }
   .iso-prologue-alert .world-surface {
     animation: none;
