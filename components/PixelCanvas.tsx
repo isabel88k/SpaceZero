@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
-import { useGame } from "./GameProvider";
+import { useGame, useTranslate } from "./GameProvider";
 function noise(x: number, y: number, seed = 1) {
   const n = Math.sin(x * 127.1 + y * 311.7 + seed * 74.7) * 43758.5453;
   return n - Math.floor(n);
@@ -262,6 +262,7 @@ function drawScene(
   rect(ctx, "#925044", 602, 305, 11, 5);
 }
 export function TerrainCanvas() {
+  const tr = useTranslate();
   const ref = useRef<HTMLCanvasElement>(null);
   const { state } = useGame();
   useEffect(() => {
@@ -308,7 +309,9 @@ export function TerrainCanvas() {
       height={350}
       className="terrain-canvas"
       role="img"
-      aria-label="Paisaje pixel art procedural con montañas, astronauta boliviano, hábitat ARES y paneles solares; se transforma de Bolivia a Marte al seleccionar el origen."
+      aria-label={tr(
+        "Paisaje pixel art procedural con montañas, astronauta boliviano, hábitat ARES y paneles solares; se transforma de Bolivia a Marte al seleccionar el origen.",
+      )}
     />
   );
 }
@@ -364,6 +367,7 @@ export const project = (lon: number, lat: number) => [
   17 + (-lat - 9) * 14.5,
 ];
 export function BoliviaCanvas() {
+  const tr = useTranslate();
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const c = ref.current?.getContext("2d");
@@ -424,7 +428,9 @@ export function BoliviaCanvas() {
       width={240}
       height={240}
       role="img"
-      aria-label="Mapa geográfico pixelado de Bolivia, con cordillera, salar y tierras bajas"
+      aria-label={tr(
+        "Mapa geográfico pixelado de Bolivia, con cordillera, salar y tierras bajas",
+      )}
     />
   );
 }

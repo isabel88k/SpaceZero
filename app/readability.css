@@ -1,0 +1,3016 @@
+/* Final presentation layer: readable type, interface feedback and reduced motion.
+   Simulation, clocks, NASA requests and resource rules remain in their modules. */
+:root {
+  --terminal: "Pixelify Sans", ui-monospace, monospace;
+  --pixel: "Silkscreen", "Pixelify Sans", monospace;
+  --clear-panel: rgb(13 12 20 / 97%);
+  --clear-edge: #9bf4f6;
+}
+body {
+  font-family: var(--terminal);
+  font-size: 20px;
+  font-weight: 700;
+}
+body::before {
+  display: none !important;
+}
+.kids-game {
+  height: auto;
+  min-height: 100dvh;
+  overflow: visible;
+  color: #fff;
+}
+.kids-game
+  :where(
+    p,
+    span,
+    small,
+    strong,
+    b,
+    em,
+    a,
+    button,
+    label,
+    input,
+    summary,
+    dt,
+    dd,
+    kbd,
+    li
+  ) {
+  font-family: var(--terminal);
+  font-weight: 700;
+}
+.kids-game :where(p, label, summary, dt, dd, li) {
+  font-size: clamp(18px, 1.15rem + 0.12vw, 20px);
+  line-height: 1.4;
+}
+.kids-game :where(button, input) {
+  font-size: 18px;
+}
+.kids-game :where(small, kbd) {
+  font-size: 16px;
+}
+.kids-game :where(h1, h2, h3) {
+  font-family: var(--pixel);
+  font-weight: 700;
+  line-height: 1.5;
+  color: #fff;
+}
+.kids-game :where(h1) {
+  font-size: clamp(22px, 2.6vw, 34px);
+}
+.kids-game :where(h2) {
+  font-size: clamp(17px, 2vw, 24px);
+}
+.kids-game :where(h3) {
+  font-size: 16px;
+}
+.kids-game :where(h1, h2, h3) :where(span, em, b) {
+  font: inherit !important;
+}
+.kids-game :where(button, summary, a):focus-visible {
+  outline: 4px solid #ffe47d;
+  outline-offset: 4px;
+}
+.kids-game :where(button) {
+  min-height: 48px;
+}
+.kids-game :where(p) {
+  color: #f5f3ff;
+}
+.kids-game :where(button):disabled {
+  color: #c3bece;
+  opacity: 0.7;
+}
+.kids-game .iso-topbar {
+  height: auto;
+  min-height: 76px;
+  padding: 12px 24px;
+  gap: 20px;
+  background: var(--clear-panel);
+  border-bottom: 4px solid var(--clear-edge);
+}
+.kids-game .iso-brand {
+  gap: 12px;
+}
+.kids-game .iso-brand > div {
+  font: 700 14px/1.6 var(--pixel);
+  color: #fff;
+}
+.kids-game .iso-brand small,
+.kids-game .iso-brand small b {
+  color: #bff8f9;
+  font-size: 18px !important;
+}
+.kids-game .iso-brand > span {
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--clear-edge);
+  background: #0d0c14;
+}
+.kids-game .iso-header-actions {
+  gap: 14px;
+}
+.kids-game .iso-sol {
+  color: #fff;
+  gap: 7px;
+}
+.kids-game .iso-sol strong {
+  color: #ffe78d;
+  font-size: 26px !important;
+}
+.kids-game .iso-sol small {
+  display: none;
+}
+.kids-game .iso-icon-button {
+  height: 48px;
+  min-width: 54px;
+  background: #0d0c14;
+  border: 2px solid #bceef1;
+  color: #fff;
+}
+.kids-game .world-help-button,
+.kids-game .world-heading,
+.kids-game .world-coordinate-card,
+.kids-game .iso-controls,
+.kids-game .dialogue-meta,
+.kids-game .world-dialogue .cursor,
+.kids-game .origin-overlay-footer,
+.kids-game .jezero-map-id,
+.kids-game .jezero-legend {
+  display: none !important;
+}
+.kids-game .mission-goal {
+  position: sticky;
+  top: 0;
+  z-index: 13;
+  background: var(--clear-panel);
+  border: 4px solid var(--clear-edge);
+  padding: 14px 20px;
+  gap: 16px;
+  min-height: 70px;
+  color: #ffe987;
+}
+.kids-game .mission-goal p {
+  font-size: 22px !important;
+  color: #fff4b8;
+  margin: 0;
+}
+.kids-game .mission-goal .goal-arrow {
+  color: #ffe778;
+  font-size: 28px !important;
+  animation: objective-nudge 1.9s ease-in-out infinite;
+}
+.kids-game .mission-goal button {
+  min-width: 112px;
+  padding: 10px 14px;
+  color: #15121c;
+  background: #ffe68b;
+  border: 2px solid #fff4c8;
+  font-size: 20px !important;
+}
+.kids-game .world-hud {
+  background: var(--clear-panel);
+  border: 4px solid var(--clear-edge);
+  border-top: 0;
+  padding: 16px 20px;
+  gap: 14px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.kids-game .world-resource {
+  padding: 0;
+  border: 0;
+  gap: 8px;
+}
+.kids-game .resource-glyph {
+  opacity: 1;
+  font-size: 26px !important;
+  min-width: 28px;
+}
+.kids-game .world-resource-label {
+  font: 700 14px/1.5 var(--pixel) !important;
+  color: #e1f4f7;
+  overflow-wrap: anywhere;
+}
+.kids-game .world-resource strong {
+  font-size: 26px !important;
+  color: #fff;
+  margin: 0;
+}
+.kids-game .world-resource small {
+  font-size: 18px !important;
+  color: #e1e0eb;
+}
+.kids-game .world-resource-bar {
+  height: 9px;
+  background: #36343f;
+  margin-top: 6px;
+}
+.kids-game .world-resource-bar i {
+  opacity: 1;
+  mask-image: none;
+}
+.kids-game .iso-world {
+  flex: none;
+  min-height: 520px;
+  height: max(520px, calc(100dvh - 390px));
+  background: #37304e;
+}
+.kids-game .iso-world::after {
+  display: none;
+}
+.kids-game .world-dialogue {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr) auto;
+  align-items: center;
+  background: var(--clear-panel);
+  border: 4px solid var(--clear-edge);
+  padding: 20px 24px;
+  gap: 20px;
+  min-height: 144px;
+}
+.kids-game .dialogue-portrait {
+  width: 80px;
+  height: auto;
+  margin: 0;
+  border: 0;
+  background: none;
+  grid-column: 1;
+}
+.kids-game .dialogue-portrait .chispa {
+  width: 72px;
+  height: 72px;
+}
+.kids-game .dialogue-portrait > span {
+  color: #c3ffff;
+  font-size: 18px !important;
+}
+.kids-game .dialogue-copy {
+  grid-column: 2;
+  min-width: 0;
+}
+.kids-game .world-dialogue .dialogue-copy p {
+  font-size: 22px !important;
+  line-height: 1.45 !important;
+  margin: 0;
+  min-height: 0;
+  max-height: none;
+  overflow: visible;
+  display: block;
+  -webkit-line-clamp: unset;
+}
+.kids-game .dialogue-action {
+  grid-column: 3;
+  padding: 14px 18px;
+  min-width: 180px;
+  font-size: 20px !important;
+  color: #15121c;
+  background: #ffe68b;
+  border: 3px solid #fff1b1;
+}
+.kids-game .mission-mark {
+  background: #ffe270;
+  color: #16121d;
+  font-size: 24px !important;
+  text-shadow: none;
+}
+.kids-game .mission-pointer {
+  filter: none;
+}
+.kids-game .player-marker {
+  font-size: 18px !important;
+  color: #fff4a4;
+  background: #0d0c14;
+  border: 2px solid #fff;
+  padding: 3px 7px;
+  text-shadow: 2px 2px #000;
+}
+.kids-game .world-nasa-button,
+.kids-game .tactical-nasa-button {
+  background: #0d0c14;
+  color: #fff;
+  border: 4px solid #c4f8fa;
+  padding: 10px 14px;
+  font-size: 20px !important;
+  min-height: 50px;
+  box-shadow: 3px 3px #0008;
+}
+.kids-game .world-nasa-button {
+  left: 16px;
+  bottom: 16px;
+  top: auto;
+  right: auto;
+  z-index: 8;
+}
+.kids-game .medal-album {
+  position: relative;
+  inset: auto;
+  margin-left: auto;
+  z-index: 14;
+  border: 0;
+  width: auto;
+  background: none;
+}
+.kids-game .album-toggle {
+  padding: 10px 14px;
+  min-height: 48px;
+  border: 2px solid #ffe29a;
+  color: #ffe9a9;
+  background: #0d0c14;
+  gap: 0;
+}
+.kids-game .album-toggle span {
+  font-size: 20px !important;
+}
+.kids-game .album-content {
+  right: 0;
+  left: auto;
+  width: min(340px, calc(100vw - 32px));
+  padding: 18px;
+  background: #0d0c14;
+  border: 4px solid var(--clear-edge);
+}
+.kids-game .album-content > div {
+  padding: 12px 0;
+  gap: 12px;
+}
+.kids-game .album-content svg {
+  width: 36px;
+  height: 44px;
+  flex-shrink: 0;
+}
+.kids-game .album-content small {
+  font-size: 18px !important;
+  color: #d0e9ed;
+}
+.kids-game .origin-overlay {
+  border: 4px solid var(--clear-edge);
+  background: var(--clear-panel);
+  padding: 24px;
+  gap: 16px 28px;
+  max-height: calc(100% - 32px);
+}
+.kids-game .origin-overlay-header {
+  padding: 0;
+}
+.kids-game .origin-overlay-header h2 {
+  font-size: 18px !important;
+  margin: 8px 0;
+}
+.kids-game .origin-overlay-header h2 em {
+  margin-left: 0;
+}
+.kids-game .origin-overlay-header p {
+  font-size: 20px !important;
+}
+.kids-game .origin-choice {
+  border: 3px solid #c1b9d8;
+  background: #252131;
+  min-height: 92px;
+  padding: 14px;
+  gap: 12px;
+}
+.kids-game .origin-choice strong {
+  color: #fff;
+  font-size: 22px !important;
+}
+.kids-game .origin-choice .origin-bonus {
+  color: #e3f4c8;
+  font-size: 18px !important;
+}
+.kids-game .origin-symbol {
+  font-size: 32px !important;
+  min-width: 34px;
+}
+.kids-game .map-pin {
+  font-size: 18px !important;
+  background: #0d0c14;
+  border: 3px solid #ffe599;
+  padding: 7px;
+}
+.kids-game .origin-science {
+  display: none;
+}
+/* Tactical consoles scroll their content while their main action stays visible. */
+.kids-game .world-tactical {
+  position: fixed;
+  inset: 16px;
+  margin: auto;
+  width: min(700px, calc(100vw - 32px));
+  height: fit-content;
+  max-height: calc(100dvh - 32px);
+  background: #0d0c14;
+  border: 4px solid var(--clear-edge);
+  padding: 0;
+  color: #fff;
+  overflow: hidden;
+}
+.kids-game .tactical-header {
+  padding: 18px 20px;
+  gap: 16px;
+  border-bottom: 2px solid #5c6875;
+  background: #0d0c14;
+  align-items: center;
+}
+.kids-game .tactical-header > div:first-child {
+  min-width: 0;
+  flex: 1;
+}
+.kids-game .tactical-header h2 {
+  margin: 6px 0 0;
+}
+.kids-game .tactical-header > div > span {
+  color: #bff9fa;
+}
+.kids-game .tactical-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.kids-game .tactical-nasa-button {
+  font-size: 18px !important;
+  padding: 8px 10px;
+  border-width: 2px;
+}
+.kids-game .tactical-close {
+  min-width: 48px;
+  height: 48px;
+  color: #fff;
+  border: 2px solid #d5e2e9;
+  background: #282532;
+  font-size: 32px !important;
+}
+.kids-game .tactical-close small {
+  display: none;
+}
+.kids-game .tactical-body {
+  padding: 20px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  min-height: 0;
+}
+.kids-game .tactical-preview {
+  flex-shrink: 0;
+  height: auto;
+  background: #0d0c14;
+}
+.kids-game .tactical-preview canvas {
+  max-height: 150px;
+}
+.kids-game .tactical-footer {
+  padding: 16px 20px;
+  background: #0d0c14;
+  border-top: 2px solid #5c6875;
+  flex-shrink: 0;
+}
+.kids-game .tactical-footer-hint {
+  display: none;
+}
+.kids-game .tactical-footer:not(.tactical-footer-action) {
+  display: none;
+}
+.kids-game .launch-button {
+  min-height: 58px;
+  padding: 14px 18px;
+  color: #17121a;
+  background: #ffe28b;
+  border: 3px solid #fff4c9;
+  font-size: 20px !important;
+  line-height: 1.4 !important;
+}
+.kids-game .mission-instruction {
+  font-size: 22px !important;
+  color: #fff6c4;
+  margin: 0 0 18px;
+}
+.kids-game .science-play-card {
+  background: #20232d;
+  border: 2px solid #8db7c2;
+  padding: 16px;
+  gap: 14px;
+  margin: 16px 0;
+}
+.kids-game .science-play-card .science-pictures {
+  font-size: 30px !important;
+  white-space: normal;
+}
+.kids-game .science-play-card strong {
+  color: #d5ffcc;
+  font-size: 20px !important;
+}
+.kids-game .science-play-card p {
+  font-size: 20px !important;
+  margin-top: 8px;
+}
+.kids-game .easy-slider {
+  margin: 18px 0 26px;
+}
+.kids-game .easy-slider > span {
+  font-size: 20px !important;
+  color: #fff;
+}
+.kids-game input[type="range"] {
+  min-height: 42px;
+  width: 100%;
+}
+.kids-game input[type="range"]::-webkit-slider-thumb {
+  width: 28px;
+  height: 32px;
+}
+.kids-game input[type="range"]::-moz-range-thumb {
+  width: 28px;
+  height: 32px;
+}
+.kids-game .safe-zone-label {
+  font-size: 18px !important;
+  color: #dcffdb;
+  padding-top: 8px;
+}
+.kids-game .easy-readouts {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.kids-game .easy-status {
+  padding: 14px;
+  margin: 16px 0;
+  border: 2px solid #6daf95;
+  background: #12261e;
+  color: #d0ffd3;
+}
+.kids-game .easy-system {
+  padding: 18px 12px;
+  gap: 10px;
+  min-height: 150px;
+  border: 3px solid #a8a3b3;
+  background: #24212d;
+}
+.kids-game .easy-system.switched-on {
+  border-color: #bbf793;
+  background: #1b3422;
+}
+.kids-game .easy-system-icon {
+  font-size: 32px !important;
+}
+.kids-game .world-secondary,
+.kids-game .info-map-tools button {
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 2px solid #b3d1db;
+  background: #24212d;
+  color: #fff;
+  font-size: 20px !important;
+}
+.kids-game .nasa-fact-content {
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.kids-game .nasa-fact-content p,
+.kids-game .secondary-info p {
+  font-size: 20px !important;
+  line-height: 1.5 !important;
+  margin: 0 0 16px;
+}
+.kids-game .nasa-fact-content a {
+  display: block;
+  padding: 12px 0;
+  color: #b8f7ff;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+.kids-game .secondary-info {
+  border-top: 2px solid #6e697d;
+  margin-top: 20px;
+  padding-top: 12px;
+}
+.kids-game .secondary-info summary {
+  cursor: pointer;
+  padding: 10px 0;
+  color: #ffecaa;
+  font-size: 22px !important;
+}
+.kids-game .info-map-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0;
+}
+.kids-game .learning-dialog,
+.kids-game .mission-dossier {
+  background: #0d0c14;
+  color: #fff;
+  border: 4px solid var(--clear-edge);
+  padding: 24px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+}
+.kids-game .learning-header {
+  gap: 18px;
+  margin-bottom: 22px;
+}
+.kids-game .learning-header span {
+  color: #c5f8ff;
+}
+.kids-game .learning-dialog p {
+  font-size: 22px !important;
+  line-height: 1.5 !important;
+}
+.kids-game .quiz-answers {
+  gap: 14px;
+}
+.kids-game .quiz-answers button {
+  min-height: 64px;
+  padding: 16px;
+  border: 3px solid #b1d3de;
+  color: #fff;
+  background: #252332;
+  font-size: 20px !important;
+}
+.kids-game .quiz-answers button b {
+  font-size: 22px !important;
+}
+.kids-game .gentle-note,
+.kids-game .quiz-feedback {
+  color: #e4dff5;
+}
+.kids-game .medal-earned h3 {
+  font-size: 18px !important;
+}
+.kids-game .world-toast,
+.kids-game .eva-route-card,
+.kids-game .world-complete-banner {
+  background: #0d0c14;
+  border: 3px solid #bff8fa;
+  padding: 14px 18px;
+  color: #fff;
+}
+.kids-game .rover-hud {
+  padding: 16px 24px;
+  gap: 20px;
+  background: #0d0c14;
+  border: 4px solid var(--clear-edge);
+  border-top: 0;
+}
+.kids-game .rover-twin {
+  padding: 0;
+  border: 0;
+}
+.kids-game .rover-twin strong {
+  font-size: 26px !important;
+  color: #fff;
+}
+.kids-game .rover-twin-bar {
+  height: 12px;
+}
+.kids-game .rover-environment {
+  color: #fff;
+}
+.kids-game .route-planner {
+  width: min(660px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  padding: 24px;
+  background: #0d0c14;
+  border: 4px solid var(--clear-edge);
+  overflow-y: auto;
+}
+.kids-game .route-options {
+  gap: 16px;
+}
+.kids-game .route-option {
+  padding: 20px 16px;
+  min-height: 200px;
+  border: 3px solid #e3c698;
+  background: #26222b;
+}
+.kids-game .route-option strong {
+  color: #ffe9a6;
+  font-size: 24px !important;
+}
+.kids-game .route-option .easy-route-symbol {
+  font-size: 32px !important;
+}
+.kids-game .rover-console {
+  background: #0d0c14;
+  border: 4px solid var(--clear-edge);
+  width: min(440px, calc(100% - 32px));
+  padding: 20px;
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
+}
+.kids-game .rover-heat-toggle {
+  min-height: 64px;
+  padding: 14px;
+  font-size: 20px !important;
+  border-width: 3px;
+}
+.kids-game .rover-route-progress {
+  display: none;
+}
+.kids-game .world-solar-emergency {
+  background: #210f18;
+  border: 4px solid #ffb19c;
+  padding: 24px;
+}
+.kids-game .world-shield-button {
+  min-height: 88px;
+  padding: 18px;
+  font-size: 26px !important;
+  border: 4px solid #ffe8b4;
+}
+.kids-game .easy-countdown strong {
+  font-size: 48px !important;
+}
+.kids-game .dossier-grid {
+  gap: 16px;
+}
+.kids-game .dossier-grid > div {
+  padding: 18px;
+  background: #25212e;
+  border: 2px solid #9287aa;
+}
+.kids-game .dossier-grid dt {
+  color: #d2eff5;
+}
+.kids-game .dossier-grid dd {
+  font-size: 22px !important;
+  color: #fff;
+}
+@media (max-width: 1000px) {
+  .kids-game .world-hud {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .kids-game .world-resource-label {
+    font-family: var(--terminal) !important;
+    font-size: 18px !important;
+  }
+  .kids-game .resource-glyph {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .kids-game .iso-topbar {
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    gap: 12px;
+  }
+  .kids-game .iso-brand {
+    width: 100%;
+  }
+  .kids-game .iso-brand > div {
+    font-size: 14px;
+  }
+  .kids-game .medal-album {
+    margin-left: 0;
+    margin-right: auto;
+  }
+  .kids-game .iso-world {
+    min-height: 580px;
+    height: 580px;
+  }
+  .kids-game .mission-goal {
+    padding: 12px;
+    gap: 10px;
+  }
+  .kids-game .mission-goal p {
+    font-size: 20px !important;
+  }
+  .kids-game .mission-goal button {
+    min-width: 90px;
+    padding: 10px;
+    font-size: 18px !important;
+  }
+  .kids-game .mission-goal .goal-arrow {
+    display: none;
+  }
+  .kids-game .world-hud {
+    padding: 14px 12px;
+    gap: 12px;
+  }
+  .kids-game .world-resource strong {
+    font-size: 24px !important;
+  }
+  .kids-game .world-resource-label {
+    font-size: 18px !important;
+  }
+  .kids-game .world-dialogue {
+    grid-template-columns: 64px minmax(0, 1fr);
+    padding: 18px 14px;
+    gap: 14px;
+  }
+  .kids-game .dialogue-portrait {
+    width: 64px;
+  }
+  .kids-game .dialogue-portrait .chispa {
+    width: 60px;
+    height: 60px;
+  }
+  .kids-game .dialogue-copy {
+    grid-row: 1;
+  }
+  .kids-game .dialogue-copy p {
+    font-size: 22px !important;
+  }
+  .kids-game .dialogue-action {
+    grid-column: 1/-1;
+    grid-row: 2;
+    width: 100%;
+  }
+  .kids-game .origin-overlay {
+    display: flex;
+    flex-direction: column;
+    inset: 12px;
+    width: calc(100% - 24px);
+    max-height: calc(100% - 24px);
+    padding: 20px;
+    gap: 16px;
+  }
+  .kids-game .origin-overlay .bolivia-map {
+    min-height: 220px;
+    max-width: 250px;
+    flex-shrink: 0;
+    width: 100%;
+    align-self: center;
+    order: 1;
+  }
+  .kids-game .origin-overlay-header {
+    order: 0;
+    display: block;
+  }
+  .kids-game .origin-overlay-header p {
+    display: block;
+  }
+  .kids-game .origin-choices {
+    order: 2;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .kids-game .origin-choice {
+    min-height: 94px;
+    flex-direction: row;
+    text-align: left;
+  }
+  .kids-game .origin-choice > span:nth-child(2) {
+    display: block;
+  }
+  .kids-game .origin-choice .origin-bonus {
+    display: block;
+  }
+  .kids-game .world-tactical {
+    inset: 8px;
+    width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+  .kids-game .tactical-header {
+    padding: 14px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .kids-game .tactical-header > div:first-child {
+    flex-basis: calc(100% - 64px);
+  }
+  .kids-game .tactical-header-actions {
+    flex-shrink: 1;
+    width: 100%;
+    justify-content: space-between;
+  }
+  .kids-game .tactical-close {
+    margin-left: auto;
+  }
+  .kids-game .tactical-body {
+    padding: 18px 14px;
+  }
+  .kids-game .tactical-footer {
+    padding: 14px;
+  }
+  .kids-game .tactical-preview canvas {
+    max-height: 120px;
+  }
+  .kids-game .science-play-card {
+    display: block;
+    padding: 14px;
+  }
+  .kids-game .science-pictures {
+    margin-bottom: 12px;
+  }
+  .kids-game .learning-dialog,
+  .kids-game .mission-dossier {
+    padding: 20px 16px;
+  }
+  .kids-game .learning-header {
+    flex-wrap: wrap;
+  }
+  .kids-game .easy-system-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .kids-game .easy-system {
+    padding: 16px 10px;
+  }
+  .kids-game .route-options {
+    grid-template-columns: 1fr;
+  }
+  .kids-game .rover-hud {
+    flex-wrap: wrap;
+    padding: 16px;
+    gap: 16px;
+  }
+  .kids-game .rover-twin {
+    min-width: 0;
+    flex: 1;
+  }
+  .kids-game .rover-environment {
+    width: 100%;
+  }
+  .kids-game .rover-console {
+    left: 16px;
+    right: 16px;
+    bottom: 84px;
+    max-height: calc(100% - 110px);
+  }
+  .kids-game .jezero-extraction-label {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kids-game *,
+  .kids-game *::before,
+  .kids-game *::after,
+  .kids-game::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+.kids-game .jezero-world {
+  background: #37304e;
+}
+.kids-game.jezero-night .jezero-world {
+  background: #171d33;
+}
+@media (max-width: 760px) {
+  .kids-game .rover-hud {
+    grid-template-columns: 1fr 1fr;
+  }
+  .kids-game .rover-environment {
+    grid-column: 1/-1;
+  }
+}
+/* Keep the guide on screen on desktop; small screens retain natural scrolling. */
+.kids-game .world-dialogue {
+  margin: 0;
+  width: 100%;
+  min-height: 120px;
+  padding: 16px 24px;
+}
+.kids-game .bolivia-map > span {
+  display: none;
+}
+@media (min-width: 761px) {
+  .kids-game {
+    height: 100dvh;
+    min-height: 720px;
+    overflow: hidden;
+  }
+  .kids-game .iso-world {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+  }
+  .kids-game .origin-overlay {
+    padding: 20px;
+    gap: 12px 24px;
+  }
+  .kids-game .origin-choices {
+    gap: 8px;
+  }
+  .kids-game .origin-choice {
+    padding: 12px;
+    min-height: 82px;
+  }
+  .kids-game .origin-overlay-header h2 {
+    font-size: 16px !important;
+  }
+  .kids-game .origin-overlay-header p {
+    margin-bottom: 6px;
+  }
+  .kids-game .world-dialogue .dialogue-copy p {
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+  }
+}
+.kids-game .bolivia-map > small {
+  display: none;
+}
+@media (min-width: 761px) {
+  .kids-game .origin-overlay-header p {
+    display: none;
+  }
+}
+.kids-game .science-pictures {
+  min-width: 0;
+  width: auto;
+}
+.kids-game .easy-water > h3 {
+  display: none;
+}
+.kids-game .easy-slider {
+  margin: 16px 0 20px;
+}
+.kids-game .safe-band {
+  border: 2px solid #a9ff75;
+  background: #4b8f3d;
+}
+.kids-game:has(.origin-overlay) .world-canvas-container {
+  visibility: hidden;
+}
+/* Four choices stay visible together; explanations live in Info NASA. */
+.kids-game .easy-system {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: center;
+  align-content: center;
+  min-height: 126px;
+  padding: 14px;
+  gap: 8px 10px;
+}
+.kids-game .easy-system-icon {
+  margin: 0;
+}
+.kids-game .easy-system > small {
+  display: none;
+}
+.kids-game .easy-system .binary-state {
+  grid-column: 1/-1;
+  padding-top: 4px;
+  margin: 0;
+  color: #ece5f6;
+}
+.kids-game .easy-system.switched-on .binary-state {
+  color: #d4ffb6;
+}
+.kids-game .easy-storm .easy-round h3 {
+  display: none;
+}
+.kids-game .easy-storm .easy-round {
+  margin: 12px 0;
+}
+@media (max-width: 760px) {
+  .kids-game .easy-system {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    min-height: 154px;
+    padding: 12px 8px;
+  }
+  .kids-game .easy-system .binary-state {
+    gap: 0;
+  }
+  .kids-game .binary-state i {
+    display: none;
+  }
+}
+/* Match the drawing's aspect ratio so canvas letters keep their natural shape. */
+.kids-game .signal-preview .oscilloscope {
+  width: 100%;
+  height: auto;
+  max-height: none;
+  aspect-ratio: 16 / 5;
+}
+@media (min-width: 761px) {
+  .kids-game.jezero-game {
+    height: 100dvh;
+    min-height: 720px;
+    overflow: hidden;
+  }
+}
+.kids-game .world-dialogue {
+  max-height: none;
+  flex-shrink: 0;
+}
+.kids-game .jezero-world:has(.route-planner) {
+  isolation: auto;
+}
+.kids-game .route-planner {
+  position: fixed;
+  inset: 16px;
+  margin: auto;
+  transform: none;
+  height: fit-content;
+  max-height: calc(100dvh - 32px);
+  z-index: 25;
+}
+.kids-game .rover-console-heading,
+.kids-game .rover-console .easy-tip,
+.kids-game .rover-forecast {
+  display: none;
+}
+.kids-game .rover-console {
+  bottom: 16px;
+  right: 16px;
+}
+.kids-game .rover-heat-toggle {
+  margin-bottom: 16px;
+}
+@media (max-width: 760px) {
+  .kids-game .rover-console {
+    bottom: 84px;
+  }
+}
+/* The astronaut is visible on the ground; its old badge covered mission names. */
+.kids-game .player-marker {
+  display: none;
+}
+@media (max-width: 760px) {
+  .kids-game .iso-world {
+    height: 420px;
+    min-height: 420px;
+  }
+}
+@media (max-width: 760px) {
+  .kids-game:has(.origin-overlay) .iso-world {
+    height: 500px;
+    min-height: 500px;
+  }
+  .kids-game .world-nasa-button {
+    left: auto;
+    right: 16px;
+  }
+}
+
+/* The story track reflects the existing clock. Its stops mark the phase boundaries. */
+.kids-game .prologue-timeline {
+  --timeline-accent: #85eef4;
+  flex: none;
+  display: grid;
+  gap: 8px;
+  padding: 10px clamp(12px, 2vw, 24px) 12px;
+  background: #111221;
+  border-bottom: 3px solid var(--timeline-accent);
+}
+.kids-game .prologue-timeline:has(.prologue-phase-anomaly[aria-current]) {
+  --timeline-accent: #ff9177;
+}
+.kids-game .prologue-timeline:has(.prologue-phase-transform[aria-current]) {
+  --timeline-accent: #ffca74;
+}
+.prologue-timeline-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.kids-game .prologue-timeline-header > span:first-child {
+  color: #f2faff;
+  font: 700 14px/1.35 var(--pixel);
+}
+.kids-game .prologue-timeline-header > small {
+  margin-inline-start: auto;
+  color: #d0cade;
+  font-size: 15px;
+}
+.prologue-clock {
+  flex: none;
+  color: var(--timeline-accent);
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+.prologue-clock strong {
+  font-size: 25px;
+  line-height: 1;
+}
+.prologue-track {
+  position: relative;
+  height: 12px;
+  overflow: hidden;
+  background: #27283c;
+  border: 1px solid #726e86;
+}
+.prologue-track > i {
+  display: block;
+  height: 100%;
+  background: var(--timeline-accent);
+  box-shadow: inset 0 3px #fff5;
+  transform-origin: left;
+  transition: transform 40ms linear;
+}
+.prologue-track::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent calc(50% - 1px),
+    #171724 50%,
+    transparent calc(50% + 1px) calc(80% - 1px),
+    #171724 80%,
+    transparent calc(80% + 1px)
+  );
+}
+.prologue-phases {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.kids-game .prologue-phase {
+  --phase-color: #85eef4;
+  min-width: 0;
+  padding: 5px 8px;
+  background: #202133;
+  border: 2px solid #45455d;
+  color: #e0dbef;
+  font-size: 16px;
+  line-height: 1.25;
+}
+.kids-game .prologue-phase-anomaly {
+  --phase-color: #ff9177;
+}
+.kids-game .prologue-phase-transform {
+  --phase-color: #ffca74;
+}
+.prologue-phase > b {
+  color: var(--phase-color);
+  font-size: 14px;
+  white-space: nowrap;
+}
+.kids-game .prologue-phase[data-complete] {
+  border-color: color-mix(in srgb, var(--phase-color), #202133 55%);
+}
+.kids-game .prologue-phase[aria-current] {
+  color: #fff7e8;
+  border-color: var(--phase-color);
+  background: color-mix(in srgb, var(--phase-color) 19%, #161624);
+  box-shadow: inset 0 0 12px
+    color-mix(in srgb, var(--phase-color) 22%, transparent);
+}
+
+.kids-game .iso-header-status {
+  color: #bdf4de;
+  font: 700 16px/1.25 var(--terminal);
+}
+.kids-game .live-dot {
+  color: #9ff1bd;
+  animation: status-beacon 2.4s ease-in-out infinite;
+}
+.kids-game .world-complete-banner {
+  animation: mission-banner-enter 220ms ease-out both;
+}
+@keyframes objective-nudge {
+  50% {
+    transform: translateX(4px);
+  }
+}
+@keyframes status-beacon {
+  50% {
+    box-shadow:
+      0 0 0 3px #9ff1bd25,
+      0 0 10px currentColor;
+  }
+}
+@keyframes mission-banner-enter {
+  from {
+    opacity: 0;
+    translate: 0 -6px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* The number and the warning remain readable throughout the alert. */
+.kids-game .world-resource {
+  position: relative;
+  padding: 6px 8px;
+  border: 2px solid #37384e;
+  background: #181828;
+}
+.kids-game .world-resource-bar > i {
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--resource) 0 10px,
+    color-mix(in srgb, var(--resource), #0d0c14 23%) 10px 12px
+  );
+}
+.kids-game .world-resource.resource-critical {
+  border-color: #ff8a70;
+  background: #2e1924;
+  box-shadow:
+    0 0 9px #ff775778,
+    inset 0 0 0 1px #ff9466a0;
+  animation: resource-alarm 1.9s ease-in-out infinite;
+}
+.resource-critical .resource-glyph {
+  animation: resource-icon-nudge 1.9s ease-in-out infinite;
+}
+.kids-game .resource-warning {
+  position: absolute;
+  inset: 3px 3px auto auto;
+  width: 15px;
+  text-align: center;
+  color: #32160a;
+  background: #ffb25f;
+  font: 700 14px/16px var(--terminal);
+}
+.kids-game .resource-delta {
+  position: absolute;
+  z-index: 1;
+  inset: auto 4px 17px auto;
+  pointer-events: none;
+  padding: 2px 4px;
+  background: #10121d;
+  border: 1px solid currentColor;
+  box-shadow: 1px 2px #08070f;
+  font: 700 15px/1 var(--terminal);
+  white-space: nowrap;
+  animation: resource-delta-rise 1.35s ease-out both;
+}
+.resource-gain {
+  color: #b7ff9c;
+}
+.resource-loss {
+  color: #ffc087;
+}
+@keyframes resource-alarm {
+  50% {
+    border-color: #ffbc69;
+    box-shadow:
+      0 0 12px #ff8d6598,
+      inset 0 0 0 1px #ffba6c;
+  }
+}
+@keyframes resource-icon-nudge {
+  0%,
+  28%,
+  100% {
+    transform: translateX(0);
+  }
+  9% {
+    transform: translateX(-2px);
+  }
+  18% {
+    transform: translateX(2px);
+  }
+}
+@keyframes resource-delta-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  16%,
+  72% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.kids-game .world-dialogue {
+  --dialogue-edge: #a0eff6;
+  --dialogue-light: #67dfe47b;
+  --dialogue-accent: #ffe28b;
+  position: relative;
+  isolation: isolate;
+  border-color: var(--dialogue-edge);
+  box-shadow:
+    inset 0 -2px 0 var(--dialogue-accent),
+    inset 0 0 12px var(--dialogue-light);
+  animation: dialogue-aura 3.2s ease-in-out infinite;
+}
+.kids-game .world-dialogue.dialogue-alert {
+  --dialogue-edge: #ff947c;
+  --dialogue-light: #ff6e5e72;
+  --dialogue-accent: #ffbe75;
+  background: #25131f;
+  animation-duration: 1.8s;
+}
+.kids-game .world-dialogue.dialogue-alert::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 6px;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    135deg,
+    #ffad697d 0 8px,
+    #3f1c2c 8px 16px
+  );
+}
+.kids-game .world-dialogue.dialogue-celebrate {
+  --dialogue-edge: #b9f49e;
+  --dialogue-light: #a8ff8d77;
+  --dialogue-accent: #ffe697;
+  background: #14271f;
+}
+.kids-game .world-dialogue .dialogue-portrait > span {
+  color: var(--dialogue-edge);
+}
+@keyframes dialogue-aura {
+  50% {
+    box-shadow:
+      inset 0 -3px 0 var(--dialogue-accent),
+      inset 0 0 24px var(--dialogue-light);
+  }
+}
+
+.kids-game
+  :is(
+    .launch-button,
+    .dialogue-action,
+    .world-shield-button,
+    .origin-choice,
+    .easy-system
+  ) {
+  --arcade-edge: #21172d;
+  box-shadow:
+    0 5px 0 var(--arcade-edge),
+    0 7px 0 #08060c90;
+  touch-action: manipulation;
+  transition:
+    transform 110ms ease-out,
+    box-shadow 110ms ease-out;
+}
+.kids-game :is(.origin-choice, .easy-system) {
+  --arcade-edge: #302a45;
+}
+.kids-game .world-shield-button {
+  --arcade-edge: #602d36;
+}
+.kids-game .easy-emergency .world-shield-button {
+  animation: shield-arcade-ready 1.8s ease-in-out infinite;
+}
+@keyframes shield-arcade-ready {
+  50% {
+    filter: brightness(1.12);
+  }
+}
+@media (hover: hover) {
+  .kids-game
+    :is(
+      .launch-button,
+      .dialogue-action,
+      .world-shield-button,
+      .origin-choice,
+      .easy-system
+    ):hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow:
+      0 7px 0 var(--arcade-edge),
+      0 9px 0 #08060c90;
+  }
+}
+.kids-game
+  :is(
+    .launch-button,
+    .dialogue-action,
+    .world-shield-button,
+    .origin-choice,
+    .easy-system
+  ):active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 var(--arcade-edge);
+}
+.kids-game .launch-button:disabled {
+  transform: none;
+}
+
+@media (max-width: 1000px) {
+  .kids-game .world-resource .resource-glyph {
+    display: block;
+    min-width: 20px;
+    font-size: 19px !important;
+  }
+}
+@media (max-width: 760px) {
+  .prologue-timeline-header {
+    display: grid;
+    gap: 3px 8px;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .prologue-clock {
+    grid-area: 1 / 2;
+  }
+  .kids-game .prologue-timeline-header > small {
+    grid-column: 1 / -1;
+    margin: 0;
+    line-height: 1.2;
+  }
+  .kids-game .prologue-phase {
+    font-size: 15px;
+    padding: 5px 6px;
+  }
+  .prologue-phase b {
+    display: block;
+  }
+  .kids-game .world-hud {
+    gap: 8px;
+  }
+  .kids-game .world-resource {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    padding: 4px 6px 6px;
+    gap: 2px;
+  }
+  .kids-game .world-resource-label {
+    font-size: 14px !important;
+  }
+  .kids-game .world-resource strong {
+    font-size: 22px !important;
+  }
+  .kids-game .world-resource small {
+    font-size: 15px !important;
+  }
+  .kids-game .resource-temperature strong {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 2px;
+    font-size: clamp(16px, 4.5vw, 20px) !important;
+    font-variant-numeric: tabular-nums;
+  }
+  .kids-game .resource-temperature small {
+    font-size: 13px !important;
+    margin-left: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kids-game
+    :is(
+      .launch-button,
+      .dialogue-action,
+      .world-shield-button,
+      .origin-choice,
+      .easy-system
+    ):is(:hover, :active):not(:disabled) {
+    transform: none;
+  }
+}
+
+/* The minigame canvas stays above the scrollable controls. */
+.kids-game :is(.tactical-greenhouse, .tactical-storm) .tactical-preview {
+  padding: 0 10px;
+  border-bottom: 2px solid #4f6c7c;
+  background: #101926;
+}
+.kids-game .tactical-storm .tactical-preview {
+  background: #60372d;
+  border-color: #ba8054;
+}
+.kids-game .tactical-preview :is(.greenhouse-canvas, .dust-canvas) {
+  position: static;
+  display: block;
+  width: 100%;
+  height: clamp(150px, 21vh, 178px);
+  max-height: none;
+  aspect-ratio: auto;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.kids-game
+  :is(.tactical-greenhouse, .tactical-storm, .tactical-rescue)
+  .tactical-header
+  h2 {
+  font: 700 clamp(16px, 2vw, 21px)/1.35 var(--pixel);
+}
+.kids-game .easy-storm .easy-system {
+  min-height: 110px;
+  padding: 9px 11px;
+  gap: 6px 8px;
+}
+.kids-game .storm-budget-feedback {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 4px 0;
+  background: #0d0c14;
+}
+.kids-game .storm-budget-feedback .switch-count {
+  margin: 0;
+}
+.kids-game .storm-budget-feedback .easy-notice {
+  margin: 6px 0 2px;
+}
+.kids-game .easy-system > strong {
+  font-size: clamp(16px, 2vw, 20px);
+  line-height: 1.12;
+}
+.kids-game .easy-system .binary-state {
+  font: 700 14px/1.25 var(--terminal);
+}
+.kids-game .easy-system .system-power-line {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  height: 7px;
+  color: #706b81;
+}
+.system-power-line::before,
+.system-power-line::after {
+  content: "";
+  flex: 0 0 6px;
+  height: 7px;
+  border: 1px solid currentColor;
+  background: currentColor;
+}
+.system-power-line > i {
+  flex: 1;
+  height: 3px;
+  background: repeating-linear-gradient(
+    90deg,
+    currentColor 0 7px,
+    transparent 7px 9px
+  );
+}
+.kids-game .switched-on .system-power-line {
+  color: #b3ff9a;
+  filter: drop-shadow(0 0 4px #87ff7ca8);
+}
+.kids-game .switch-count > span {
+  display: inline-block;
+  padding: 3px 8px;
+}
+.kids-game .switch-count .switch-count-overload {
+  outline: 2px solid #ffc96b;
+  background: #372921;
+  color: #ffdb98;
+  animation: console-overload 450ms ease-out;
+}
+@keyframes console-overload {
+  18%,
+  53% {
+    transform: translateX(-4px);
+    background: #6d4724;
+    box-shadow: 0 0 12px #ffb73a98;
+  }
+  35%,
+  70% {
+    transform: translateX(4px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+.kids-game .signal-captured .oscilloscope {
+  outline: 2px solid #89ffb9;
+  outline-offset: -2px;
+}
+
+.kids-game .world-solar-emergency.easy-emergency {
+  --alert-meter: #ffcf72;
+  box-sizing: border-box;
+  max-height: calc(100dvh - 18px);
+  overflow-y: auto;
+  border-color: #ff9166;
+  background: #25121b;
+  box-shadow:
+    0 0 0 3px #59273a,
+    0 0 28px #dd553c62;
+}
+.kids-game .world-solar-emergency[data-urgent] {
+  --alert-meter: #ff956b;
+  border-color: #ffc46d;
+}
+.world-solar-emergency.easy-emergency::before,
+.world-solar-emergency.easy-emergency::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 7px;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    135deg,
+    #ffc364 0 9px,
+    #742e39 9px 18px
+  );
+  background-size: 26px 100%;
+  animation: emergency-stripes 1.5s linear infinite;
+}
+.world-solar-emergency.easy-emergency::after {
+  inset: auto 0 0;
+}
+@keyframes emergency-stripes {
+  to {
+    background-position-x: 26px;
+  }
+}
+.kids-game .easy-emergency .easy-countdown {
+  margin: 12px 0 9px;
+}
+.kids-game .easy-emergency .easy-countdown strong {
+  color: var(--alert-meter);
+  text-shadow:
+    3px 3px #732d3a,
+    0 0 16px #ff633054;
+}
+.solar-shield-progress {
+  position: relative;
+  height: 16px;
+  overflow: hidden;
+  margin: 0 auto 12px;
+  border: 2px solid #dd785e;
+  background: #432331;
+}
+.solar-shield-progress > i {
+  display: block;
+  height: 100%;
+  background: var(--alert-meter);
+  box-shadow: inset 0 3px #fff7bc8c;
+  transition: width 170ms ease-out;
+}
+.solar-shield-progress::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to right,
+    transparent 0 calc(10% - 2px),
+    #28151da8 calc(10% - 2px) 10%
+  );
+}
+.kids-game .easy-emergency .world-shield-button {
+  margin-block: 12px;
+  animation: shield-emergency-beat 980ms ease-in-out infinite;
+}
+.kids-game .easy-emergency[data-urgent] .world-shield-button {
+  animation-duration: 660ms;
+}
+@keyframes shield-emergency-beat {
+  0%,
+  100% {
+    filter: brightness(1) drop-shadow(0 0 0 #ffbd5c00);
+  }
+  40% {
+    filter: brightness(1.27) drop-shadow(0 0 12px #ffbd5c8f);
+  }
+}
+@media (max-width: 480px) {
+  .kids-game .tactical-preview :is(.greenhouse-canvas, .dust-canvas) {
+    height: 150px;
+  }
+  .kids-game .world-solar-emergency.easy-emergency {
+    padding: 17px !important;
+  }
+  .kids-game .easy-emergency .world-shield-button {
+    min-height: 66px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kids-game .switch-count .switch-count-overload,
+  .kids-game .world-solar-emergency::before,
+  .kids-game .world-solar-emergency::after,
+  .kids-game .easy-emergency .world-shield-button {
+    animation: none !important;
+  }
+  .solar-shield-progress > i {
+    transition: none !important;
+  }
+}
+
+/* Collection, award, and certificate. */
+.kids-game .album-toggle {
+  gap: 10px;
+}
+.kids-game .album-count {
+  white-space: nowrap;
+  font-size: 18px !important;
+}
+.kids-game .album-miniatures {
+  display: flex;
+  gap: 3px;
+}
+.kids-game .album-miniature {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 25px;
+  border: 1px solid #474257;
+  background: #211d2c;
+}
+.album-miniature svg {
+  width: 12px;
+  height: 15px;
+}
+.kids-game .album-miniature[data-earned="true"] {
+  border-color: #ffda74;
+  background: #392b25;
+  box-shadow:
+    inset 0 0 0 1px #ffdb793c,
+    0 0 6px #ffc84c52;
+}
+@media (max-width: 420px) {
+  .kids-game .album-toggle {
+    gap: 6px;
+    padding-inline: 8px;
+  }
+  .kids-game .album-count {
+    font-size: 16px !important;
+  }
+  .kids-game .album-count b {
+    margin-left: 2px;
+  }
+  .kids-game .album-miniature {
+    width: 16px;
+    height: 22px;
+  }
+}
+
+.pixel-star {
+  clip-path: polygon(
+    36% 0,
+    64% 0,
+    64% 36%,
+    100% 36%,
+    100% 64%,
+    64% 64%,
+    64% 100%,
+    36% 100%,
+    36% 64%,
+    0 64%,
+    0 36%,
+    36% 36%
+  );
+}
+.medal-spotlight {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  min-height: 136px;
+  margin: 0 auto;
+  max-width: 308px;
+  background: radial-gradient(
+    ellipse,
+    #ffc65936,
+    #f6c15d0c 48%,
+    transparent 70%
+  );
+}
+.medal-spotlight > svg {
+  z-index: 1;
+  filter: drop-shadow(0 0 10px #ffdb74a8);
+}
+.medal-confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.medal-confetti > i {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  width: 8px;
+  height: 8px;
+  opacity: 0;
+  background: var(--bit-color);
+  animation: medal-confetti-out 1.5s var(--bit-delay) ease-out both;
+}
+.medal-confetti > .pixel-star {
+  width: 14px;
+  height: 14px;
+}
+@keyframes medal-confetti-out {
+  0% {
+    transform: translate(0, 0) scale(0.45);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  55% {
+    transform: translate(var(--bit-x), var(--bit-y)) scale(1);
+    opacity: 0.92;
+  }
+  100% {
+    transform: translate(var(--bit-x), calc(var(--bit-y) + 21px)) scale(0.85);
+    opacity: 0;
+  }
+}
+
+.kids-game .mission-dossier.dossier-success {
+  border-color: #f3ce7a;
+  box-shadow:
+    0 0 0 3px #624a37,
+    0 0 30px #d7a54638;
+}
+.kids-game .dossier-masthead {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #161e36;
+  border-bottom-color: #ba9756;
+}
+.kids-game .dossier-masthead > :not(.dossier-stars) {
+  z-index: 1;
+}
+.kids-game .dossier-masthead > div:not(.dossier-stars) {
+  color: #fff1bf;
+  font-size: clamp(16px, 2.8vw, 24px);
+  font-weight: 700;
+  text-shadow: 1px 2px #0c1223;
+}
+.kids-game .dossier-masthead small {
+  color: #d8dbea;
+}
+.kids-game .dossier-masthead .nasa-pixel {
+  border-color: #e2b765;
+  background: #1c2947;
+  color: #ffdf91;
+}
+.dossier-stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.dossier-stars i {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #fae39c;
+  animation: diploma-twinkle 2.8s ease-in-out infinite;
+}
+.dossier-stars i:nth-child(3n) {
+  background: #93dce8;
+  width: 5px;
+  height: 5px;
+}
+@keyframes diploma-twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.82;
+  }
+}
+.kids-game .diploma-medals {
+  gap: 10px;
+  padding: 12px;
+}
+.kids-game .diploma-medal {
+  padding: 10px 5px;
+  min-width: 0;
+  border: 2px solid #534667;
+  background: #211b2e;
+}
+.kids-game .diploma-medal > span {
+  font: 700 15px/1.3 var(--terminal);
+}
+.kids-game .diploma-medal[data-earned="true"] {
+  border-color: #ecc775;
+  background: #302624;
+  box-shadow: inset 0 0 10px #ffc65133;
+}
+.kids-game .diploma-medal[data-earned="true"] > span {
+  color: #ffedaa;
+}
+.kids-game .dossier-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 12px;
+  margin: 18px 0 8px;
+}
+.kids-game .dossier-actions :is(.dossier-restart, .dossier-print) {
+  width: 100%;
+  margin: 0 !important;
+  font: 700 17px/1.28 var(--terminal) !important;
+  padding: 12px 9px !important;
+}
+.kids-game .dossier-print {
+  min-height: 58px;
+  color: #fff1bb;
+  background: #272238;
+  border: 3px solid #efd185;
+  box-shadow: 0 4px #13131e;
+}
+.kids-game .dossier-print:hover {
+  background: #3d3143;
+}
+@media (max-width: 520px) {
+  .kids-game .dossier-actions {
+    grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .medal-confetti > i {
+    transform: translate(var(--bit-x), var(--bit-y));
+    opacity: 0.55;
+  }
+  .dossier-stars i {
+    opacity: 0.55;
+  }
+}
+
+/* Compact, translucent HUD for both the base and Jezero. */
+@media screen {
+  .kids-game.floating-world {
+    --hud-background: rgb(16 14 28 / 86%);
+    --hud-edge: rgb(155 244 246 / 65%);
+    --hud-shadow: 0 10px 28px #0007;
+    --hud-width: min(1240px, calc(100% - 32px));
+  }
+  .floating-world.kids-game
+    :is(
+      .iso-topbar,
+      .mission-goal,
+      .world-hud,
+      .rover-hud,
+      .prologue-timeline
+    ) {
+    position: relative;
+    top: auto;
+    z-index: 12;
+    width: var(--hud-width);
+    flex: none;
+    margin: 10px auto 0;
+    border-radius: 16px;
+    border: 2px solid var(--hud-edge);
+    background: var(--hud-background);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--hud-shadow);
+  }
+  .floating-world.kids-game :is(.iso-topbar, .world-hud, .rover-hud)::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    box-shadow: inset 0 0 10px #9bf4f655;
+    opacity: 0.2;
+    animation: glass-edge-pulse 4.2s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .floating-world.kids-game.jezero-game .jezero-world {
+    background: transparent;
+  }
+  .floating-world.kids-game .origin-overlay {
+    border-radius: 18px;
+    box-shadow: var(--hud-shadow);
+  }
+  .floating-world.kids-game .iso-topbar {
+    height: auto;
+    min-height: 0;
+    padding: 8px 18px;
+    gap: 10px;
+    justify-content: space-between;
+  }
+  .floating-world.kids-game .iso-brand {
+    gap: 8px;
+  }
+  .floating-world.kids-game .iso-brand > div {
+    font-size: 12px;
+    line-height: 1.25;
+  }
+  .floating-world.kids-game .iso-brand small,
+  .floating-world.kids-game .iso-brand small b {
+    font-size: 15px !important;
+  }
+  .floating-world.kids-game .iso-brand > span {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    flex: none;
+  }
+  .floating-world.kids-game .iso-header-actions {
+    gap: 8px;
+  }
+  .floating-world.kids-game .iso-icon-button {
+    min-width: 42px;
+    min-height: 40px;
+    height: 40px;
+    border-radius: 10px;
+  }
+  .floating-world.kids-game .album-toggle {
+    min-height: 40px;
+    border-radius: 10px;
+  }
+  .floating-world.kids-game .mission-goal {
+    width: fit-content;
+    max-width: calc(100% - 32px);
+    min-height: 0;
+    margin-top: 8px;
+    padding: 6px 18px;
+    border-color: #ffe47d;
+    border-radius: 999px;
+    background: rgb(38 28 56 / 92%);
+    box-shadow: 0 6px 20px #0006;
+  }
+  .floating-world.kids-game .mission-goal p {
+    font-size: 19px !important;
+    line-height: 1.15 !important;
+  }
+  .floating-world.kids-game .mission-goal button {
+    border-radius: 999px;
+    min-height: 34px;
+    min-width: max-content;
+    padding: 5px 12px;
+    font-size: 17px !important;
+  }
+  .floating-world.kids-game :is(.world-hud, .rover-hud) {
+    padding: 10px 16px;
+    gap: 8px;
+  }
+  .floating-world.kids-game .world-resource {
+    padding: 4px 6px;
+    gap: 5px;
+    border-radius: 8px;
+  }
+  .floating-world.kids-game .world-resource-label {
+    font-size: 13px !important;
+    line-height: 1.15 !important;
+  }
+  .floating-world.kids-game .world-resource strong {
+    font-size: 22px !important;
+    line-height: 1.05 !important;
+  }
+  .floating-world.kids-game .world-resource small {
+    font-size: 14px !important;
+  }
+  .floating-world.kids-game .resource-glyph {
+    min-width: 20px;
+    font-size: 20px !important;
+  }
+  .floating-world.kids-game .world-resource-bar {
+    height: 6px;
+    margin-top: 4px;
+    border-radius: 99px;
+  }
+  .floating-world.kids-game .prologue-timeline {
+    z-index: 11;
+    width: min(980px, calc(100% - 32px));
+    gap: 5px;
+    padding: 8px 14px;
+    border-color: var(--timeline-accent);
+  }
+  .floating-world .prologue-phase {
+    border-radius: 6px;
+  }
+  .floating-world.kids-game .world-dialogue {
+    z-index: 11;
+    width: min(980px, calc(100% - 32px));
+    margin: 6px auto 12px;
+    min-height: 96px;
+    max-height: none;
+    padding: 12px 20px;
+    gap: 14px;
+    grid-template-columns: 56px minmax(0, 1fr) auto;
+    border: 2px solid var(--dialogue-edge);
+    border-radius: 18px;
+    background: rgb(16 14 28 / 90%);
+    backdrop-filter: blur(10px);
+    box-shadow:
+      0 12px 32px #0008,
+      inset 0 0 8px var(--dialogue-light);
+    animation-name: floating-dialogue-aura;
+    overflow: hidden;
+  }
+  .floating-world.kids-game .world-dialogue.dialogue-alert {
+    background: #2a1421ee;
+  }
+  .floating-world.kids-game .world-dialogue.dialogue-celebrate {
+    background: #172920ed;
+  }
+  .floating-world.kids-game .world-dialogue .dialogue-portrait {
+    width: 56px;
+  }
+  .floating-world.kids-game .dialogue-portrait .chispa {
+    width: 48px;
+    height: 48px;
+  }
+  .floating-world.kids-game .dialogue-portrait > span {
+    font-size: 14px !important;
+  }
+  .floating-world.kids-game .world-dialogue .dialogue-copy p {
+    display: block;
+    min-height: 0;
+    font-size: 19px !important;
+    line-height: 1.26 !important;
+  }
+  .floating-world.kids-game .dialogue-action {
+    padding: 8px 12px;
+    min-height: 40px;
+    min-width: 0;
+    font-size: 17px !important;
+    border-radius: 10px;
+  }
+  .floating-world.kids-game
+    .world-notices
+    :is(.world-toast, .eva-route-card, .world-complete-banner) {
+    position: static;
+    transform: none;
+    width: fit-content;
+    max-width: calc(100vw - 2 * var(--world-gutter));
+    padding: 8px 12px;
+    border: 2px solid var(--hud-edge);
+    border-radius: 14px;
+    background: rgb(16 14 28 / 90%);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 8px 24px #0007;
+    color: #fff;
+    font: 700 17px/1.2 var(--terminal);
+    animation: floating-notice-enter 0.24s ease-out both;
+  }
+  .floating-world .world-complete-banner button {
+    pointer-events: auto;
+    min-height: 38px;
+    border-radius: 9px;
+  }
+  .floating-world .eva-route-card strong {
+    margin-top: 2px;
+  }
+  .floating-world .eva-route-card small {
+    margin-top: 2px;
+  }
+  .floating-world.kids-game :is(.world-tools, .world-nasa-button) {
+    position: absolute;
+    top: auto;
+    bottom: var(--world-dock-bottom);
+    z-index: 15;
+    border: 2px solid var(--hud-edge);
+    background: rgb(13 12 20 / 88%);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 8px 24px #0007;
+  }
+  .floating-world.kids-game .world-tools {
+    right: var(--world-gutter);
+    gap: 6px;
+    padding: 6px;
+    border-color: #9bf4f6;
+    border-radius: 14px;
+  }
+  .floating-world.kids-game .world-tools[hidden] {
+    display: none;
+  }
+  .floating-world.kids-game .world-tools button {
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+    border: 1px solid #9bf4f63d;
+    border-radius: 10px;
+    background: #273143;
+    color: #e5fcff;
+    font: 700 25px/1 var(--terminal);
+  }
+  .floating-world.kids-game .world-nasa-button {
+    left: var(--world-gutter);
+    right: auto;
+    min-height: 40px;
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-size: 17px !important;
+  }
+  .floating-world.kids-game
+    :is(.world-tools button, .world-nasa-button):is(:hover, :focus-visible):not(
+      :disabled
+    ) {
+    border-color: #b2f6fa;
+    background: #334a59;
+    color: #fff;
+    box-shadow: 0 0 14px #5ce1e656;
+  }
+  .floating-world.kids-game .building-label {
+    width: max-content;
+    min-width: 34px;
+    height: 34px;
+    min-height: 34px;
+    padding: 4px;
+    gap: 0;
+    justify-content: center;
+    transform-origin: top left;
+    transform: translate(-50%, -100%);
+    border: 2px solid rgb(155 244 246 / 75%);
+    border-radius: 999px;
+    background: rgb(13 12 20 / 85%);
+    color: #fff;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 3px 10px #0007;
+    transition:
+      transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 0.18s ease;
+  }
+  .floating-world.kids-game .building-label::after {
+    content: none;
+  }
+  .floating-world.kids-game .building-label .building-icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    min-width: 0;
+    font-size: 16px !important;
+    line-height: 1;
+    animation: building-bob 2.8s ease-in-out infinite;
+  }
+  .floating-world.kids-game .building-label .building-name {
+    display: block;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    padding: 0;
+    white-space: nowrap;
+    color: #fff;
+    font: 700 15px/1.15 var(--terminal) !important;
+    transition:
+      max-width 0.22s ease,
+      opacity 0.18s ease,
+      padding 0.18s ease;
+  }
+  .floating-world.kids-game
+    .building-label:is(:hover, :focus-visible, .nearby, .mission-active) {
+    transform: translate(-50%, -106%) scale(1.06);
+    background: rgb(25 29 48 / 94%);
+    z-index: 4;
+  }
+  .floating-world.kids-game
+    .building-label[data-expand="right"]:is(
+      :hover,
+      :focus-visible,
+      .nearby,
+      .mission-active
+    ) {
+    transform: translate(-16px, -106%) scale(1.06);
+  }
+  .floating-world.kids-game
+    .building-label[data-expand="left"]:is(
+      :hover,
+      :focus-visible,
+      .nearby,
+      .mission-active
+    ) {
+    transform: translate(calc(16px - 100%), -106%) scale(1.06);
+  }
+  .floating-world.kids-game .building-label.mission-active {
+    background: #25332be8;
+    z-index: 5;
+  }
+  .floating-world.kids-game .building-label:is(:hover, :focus-visible) {
+    z-index: 6;
+  }
+  .floating-world.kids-game .building-label:focus-visible {
+    outline: 2px solid #ffe47d;
+    outline-offset: 2px;
+  }
+  .floating-world.kids-game
+    .building-label:is(:hover, :focus-visible, .nearby, .mission-active)
+    .building-name {
+    max-width: 220px;
+    opacity: 1;
+    padding-right: 10px;
+    padding-left: 6px;
+  }
+  .floating-world.kids-game .rover-twin span {
+    font: 700 14px/1.2 var(--terminal);
+    color: #e1f4f7;
+  }
+  .floating-world.kids-game .rover-environment {
+    padding-inline-start: 8px;
+  }
+  .floating-world.kids-game .jezero-extraction-label {
+    transform: translate(-50%, -100%);
+    border: 1px solid var(--hud-edge);
+    border-radius: 8px;
+    white-space: nowrap;
+    padding: 5px 7px;
+    font: 700 13px/1.2 var(--terminal);
+  }
+  .floating-world.kids-game .with-rover-controls .rover-console {
+    left: auto;
+    right: var(--world-gutter);
+    bottom: 10px;
+    width: var(--rover-console-width);
+    padding: 12px;
+    border: 2px solid var(--hud-edge);
+    border-radius: 16px;
+    background: var(--hud-background);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--hud-shadow);
+  }
+  .floating-world.kids-game
+    .rover-console
+    :is(.rover-heat-toggle, .launch-button) {
+    min-height: 44px;
+    border-radius: 10px;
+    padding: 6px 9px;
+    font-size: 17px !important;
+  }
+  .floating-world.kids-game .rover-console .rover-heat-toggle {
+    margin-bottom: 9px;
+  }
+
+  @keyframes glass-edge-pulse {
+    50% {
+      opacity: 0.72;
+    }
+  }
+  @keyframes floating-dialogue-aura {
+    50% {
+      box-shadow:
+        0 12px 32px #0008,
+        0 0 18px var(--dialogue-light),
+        inset 0 -2px 0 var(--dialogue-accent);
+    }
+  }
+  @keyframes floating-notice-enter {
+    from {
+      opacity: 0;
+      translate: 0 6px;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+  @keyframes building-bob {
+    50% {
+      translate: 0 -2px;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .kids-game.floating-world {
+      --hud-width: calc(100% - 20px);
+    }
+    .floating-world.kids-game .origin-overlay {
+      position: relative;
+      inset: auto;
+      width: calc(100% - 24px);
+      max-height: none;
+      overflow: visible;
+      margin: 12px auto 8px;
+    }
+    .floating-world.kids-game
+      .iso-world:has(.origin-overlay)
+      .world-nasa-button {
+      position: relative;
+      inset: auto;
+      margin: 0 var(--world-gutter) 8px;
+    }
+    .floating-world.kids-game .iso-topbar {
+      padding: 6px 9px;
+      gap: 5px 8px;
+    }
+    .floating-world.kids-game .iso-brand {
+      width: auto;
+    }
+    .floating-world.kids-game .iso-brand > div {
+      font-size: 10px;
+    }
+    .floating-world.kids-game .iso-brand > span {
+      width: 30px;
+      height: 30px;
+    }
+    .floating-world.kids-game .iso-header-actions {
+      margin-left: auto;
+    }
+    .floating-world.kids-game .medal-album {
+      order: 1;
+      margin: 0;
+    }
+    .floating-world.kids-game .mission-goal {
+      max-width: var(--hud-width);
+      padding: 5px 10px;
+    }
+    .floating-world.kids-game .mission-goal p {
+      font-size: 17px !important;
+    }
+    .floating-world.kids-game :is(.world-hud, .rover-hud) {
+      padding: 6px 8px;
+      gap: 5px;
+    }
+    .floating-world.kids-game .world-resource {
+      padding: 4px 4px 6px;
+      gap: 2px;
+    }
+    .floating-world.kids-game .world-resource .resource-glyph {
+      position: absolute;
+      inset: auto 4px 15px auto;
+      font-size: 13px !important;
+      width: auto;
+      min-width: 0;
+    }
+    .floating-world.kids-game .world-resource small {
+      margin-left: 1px;
+      font-size: 11px !important;
+      white-space: nowrap;
+    }
+    .floating-world.kids-game .prologue-phase {
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+    .floating-world.kids-game .prologue-phase > b {
+      font-size: 12px;
+    }
+    .floating-world.kids-game .world-resource-label {
+      font-size: 13px !important;
+    }
+    .floating-world.kids-game
+      .world-resource.resource-temperature
+      .resource-glyph {
+      top: 4px;
+      bottom: auto;
+    }
+    .floating-world.kids-game .world-resource strong {
+      font-size: 19px !important;
+    }
+    .floating-world.kids-game .world-resource.resource-temperature strong {
+      flex-wrap: nowrap;
+      font-size: 16px !important;
+    }
+    .floating-world.kids-game .world-dialogue {
+      width: var(--hud-width);
+      padding: 8px 10px;
+      grid-template-columns: 44px minmax(0, 1fr);
+      gap: 6px 10px;
+    }
+    .floating-world.kids-game .world-dialogue .dialogue-portrait {
+      width: 44px;
+    }
+    .floating-world.kids-game .dialogue-portrait > span {
+      font-size: 11px !important;
+    }
+    .floating-world.kids-game .dialogue-portrait .chispa {
+      width: 40px;
+      height: 40px;
+    }
+    .floating-world.kids-game .world-dialogue .dialogue-copy p {
+      font-size: 17px !important;
+    }
+    .floating-world.kids-game .dialogue-action {
+      grid-column: 2;
+      margin: 0;
+    }
+    .floating-world.kids-game .world-tools {
+      padding: 4px;
+      gap: 4px;
+    }
+    .floating-world.kids-game .with-rover-controls .rover-console {
+      display: grid;
+      align-items: stretch;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      left: var(--world-gutter);
+      right: var(--world-gutter);
+      bottom: calc(var(--world-dock-height) + var(--world-dock-bottom));
+      width: auto;
+      padding: 5px;
+      min-height: 0;
+    }
+    .floating-world.kids-game
+      .rover-console
+      :is(.rover-heat-toggle, .launch-button) {
+      margin: 0;
+      line-height: 1.1;
+      min-width: 0;
+      min-height: 44px;
+      font-family: var(--terminal);
+      font-size: 15px !important;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .floating-world.kids-game .iso-brand small,
+    .floating-world.kids-game .iso-brand small b {
+      font-size: 13px !important;
+    }
+    .floating-world.kids-game .mission-goal {
+      border-radius: 18px;
+    }
+    .floating-world.kids-game .mission-goal p {
+      font-size: 16px !important;
+    }
+    .floating-world.kids-game .mission-goal button {
+      padding-inline: 9px;
+      font-size: 14px !important;
+    }
+    .floating-world.kids-game .world-resource-label {
+      font-size: 12px !important;
+    }
+    .floating-world.kids-game .world-nasa-button {
+      padding-inline: 8px;
+      font-size: 15px !important;
+    }
+  }
+}
+
+/* The top-layer dialogs need an operable language control of their own. */
+.kids-game .iso-icon-button.lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex: none;
+  padding: 4px 8px;
+  min-height: 40px;
+  height: 40px;
+  min-width: 49px;
+  border: 2px solid #9bf4f6;
+  border-radius: 10px;
+  background: #15192a;
+  color: #ffe78d;
+  box-shadow: 0 0 12px #5ce1e638;
+}
+.kids-game .iso-icon-button.lang-toggle > span {
+  display: inline;
+  color: inherit;
+  font: 700 15px/1 var(--terminal);
+}
+.kids-game .iso-icon-button.lang-toggle:is(:hover, :focus-visible) {
+  border-color: #ffe78d;
+  background: #25384a;
+}
+.kids-game .dialog-language {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+.kids-game.iso-prologue-alert .iso-topbar {
+  z-index: 50;
+}
+.kids-game .prologue-alert-cascade {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  pointer-events: none;
+}
+.kids-game .alert-window {
+  --alert-rotation: 0deg;
+  --alert-entry-x: -68px;
+  --alert-entry-y: -22px;
+  --alert-jolt: 4px;
+  --alert-beat: 1.65s;
+  --alert-pause: 0s;
+  position: absolute;
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px 10px;
+  border: 3px solid #ff8c72;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgb(42 16 28 / 92%);
+  backdrop-filter: blur(8px);
+  color: #fff4e6;
+  box-shadow:
+    0 12px 30px #000a,
+    0 0 18px #ff57464d;
+  rotate: var(--alert-rotation);
+  animation:
+    alert-break-in 0.48s cubic-bezier(0.19, 0.78, 0.27, 1) both,
+    alert-interference var(--alert-beat) linear calc(0.48s + var(--alert-pause))
+      infinite;
+}
+.kids-game[data-prologue-stage="collapse"] .alert-window {
+  --alert-jolt: 8px;
+}
+.kids-game .alert-window::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 6px;
+  background: repeating-linear-gradient(
+    -45deg,
+    #ff5746 0 8px,
+    #2b111b 8px 16px
+  );
+  animation: alert-stripe-scroll 1.15s linear infinite;
+}
+.kids-game[data-prologue-stage="collapse"] .alert-window::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 30px;
+  background: linear-gradient(transparent, #ff726b40, transparent);
+  pointer-events: none;
+  opacity: 0;
+  animation: alert-signal-sweep 1.55s ease-in-out var(--alert-pause) infinite;
+}
+.kids-game .alert-window strong {
+  color: #ffe58b;
+  font: 700 clamp(15px, 2.4vw, 23px)/1.1 var(--terminal);
+}
+.kids-game .alert-window :is(span, small) {
+  color: #ffc9ae;
+  font: 700 clamp(11px, 1.7vw, 14px)/1.22 var(--terminal);
+}
+.kids-game .alert-window p {
+  color: #fff4e6;
+  font: 700 clamp(14px, 1.9vw, 18px)/1.16 var(--terminal);
+  margin: 3px 0;
+}
+.kids-game .alert-main {
+  --alert-rotation: -1.5deg;
+  top: max(120px, 23dvh);
+  left: 28px;
+  width: min(420px, 31vw);
+  grid-template-columns: 54px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+.kids-game .alert-main .chispa {
+  width: 50px;
+  height: 50px;
+}
+.kids-game .alert-sensor {
+  --alert-rotation: 2deg;
+  --alert-entry-x: 76px;
+  --alert-entry-y: -15px;
+  --alert-pause: 0.2s;
+  --alert-beat: 1.47s;
+  top: max(135px, 24dvh);
+  right: 28px;
+  width: min(290px, 27vw);
+}
+.kids-game .alert-climate {
+  --alert-rotation: -2deg;
+  --alert-entry-x: -54px;
+  --alert-entry-y: 42px;
+  --alert-pause: 0.45s;
+  --alert-beat: 1.8s;
+  bottom: 145px;
+  left: 36px;
+  width: min(270px, 25vw);
+}
+.kids-game .alert-collapse {
+  --alert-entry-x: 66px;
+  --alert-entry-y: 48px;
+  --alert-pause: 0.08s;
+  --alert-beat: 1.25s;
+  bottom: 140px;
+  right: 32px;
+  width: min(380px, 31vw);
+}
+.kids-game .alert-collapse progress {
+  width: 100%;
+  height: 12px;
+  accent-color: #ffdb76;
+}
+.kids-game .alert-collapse progress::-webkit-progress-bar {
+  background: #2c1a2b;
+}
+.kids-game .alert-collapse progress::-webkit-progress-value {
+  background: #ffdb76;
+}
+@keyframes alert-break-in {
+  0% {
+    transform: translate(var(--alert-entry-x), var(--alert-entry-y)) scale(0.88);
+    opacity: 0;
+  }
+  55% {
+    transform: translate(calc(var(--alert-entry-x) * -0.11), -3px) scale(1.025);
+    opacity: 1;
+  }
+  76% {
+    transform: translate(calc(var(--alert-entry-x) * 0.04), 1px);
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes alert-interference {
+  0%,
+  47%,
+  86%,
+  100% {
+    translate: 0 0;
+  }
+  53% {
+    translate: var(--alert-jolt) -2px;
+  }
+  60% {
+    translate: calc(-1 * var(--alert-jolt)) 1px;
+  }
+  66% {
+    translate: calc(var(--alert-jolt) * 0.6) 2px;
+  }
+  74% {
+    translate: calc(var(--alert-jolt) * -0.2) -1px;
+  }
+}
+@keyframes alert-stripe-scroll {
+  to {
+    background-position: 22.63px 0;
+  }
+}
+@keyframes alert-signal-sweep {
+  0%,
+  22% {
+    top: 0;
+    opacity: 0;
+  }
+  37% {
+    opacity: 0.8;
+  }
+  70%,
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+@media (max-width: 760px) {
+  .floating-world.kids-game .iso-topbar {
+    position: sticky;
+    top: 4px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .floating-world.kids-game .iso-header-actions {
+    grid-area: 1 / 2;
+    gap: 5px;
+  }
+  .floating-world.kids-game .medal-album {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+  .floating-world.kids-game .iso-brand small,
+  .floating-world.kids-game .iso-brand small b {
+    font-size: 13px !important;
+  }
+  .kids-game .iso-header-actions .lang-toggle {
+    min-width: 44px;
+    padding-inline: 5px;
+  }
+  .kids-game .alert-window {
+    --alert-rotation: 0deg;
+    --alert-jolt: 3px;
+    padding: 10px 7px 6px;
+    gap: 3px;
+    border-width: 2px;
+  }
+  .kids-game .alert-window strong {
+    font-size: clamp(12px, 3.4vw, 16px);
+  }
+  .kids-game .alert-window p {
+    font-size: clamp(12px, 3vw, 14px);
+  }
+  .kids-game .alert-window :is(span, small) {
+    font-size: clamp(10px, 2.6vw, 13px);
+  }
+  .kids-game[data-prologue-stage="collapse"] .alert-window {
+    --alert-jolt: 5px;
+  }
+  .kids-game .alert-main {
+    grid-template-columns: minmax(0, 1fr);
+    top: clamp(132px, 19dvh, 170px);
+    left: 8px;
+    width: calc(55% - 12px);
+  }
+  .kids-game .alert-main .chispa {
+    float: right;
+    width: 28px;
+    height: 28px;
+    position: absolute;
+    right: 4px;
+    top: 6px;
+  }
+  .kids-game .alert-main strong {
+    padding-right: 21px;
+  }
+  .kids-game .alert-sensor {
+    top: clamp(148px, 21dvh, 188px);
+    right: 8px;
+    width: calc(45% - 12px);
+  }
+  .kids-game .alert-climate {
+    bottom: 16px;
+    left: 8px;
+    width: calc(46% - 12px);
+  }
+  .kids-game .alert-collapse {
+    bottom: 16px;
+    right: 8px;
+    width: calc(54% - 12px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kids-game .alert-window,
+  .kids-game .alert-window::before,
+  .kids-game .alert-window::after {
+    animation: none;
+  }
+}
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  html:has(.mission-dossier[open]) {
+    color-scheme: light;
+    background: #fff;
+  }
+  body:has(.mission-dossier[open]) {
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    color: #202435;
+    background: #fff;
+  }
+  body:has(.mission-dossier[open]) > :not(:has(.mission-dossier[open])),
+  .kids-game:has(> .mission-dossier[open]) > :not(.mission-dossier),
+  .mission-dossier .dossier-actions,
+  .mission-dossier .dossier-stars,
+  .mission-dossier .dialog-language {
+    display: none !important;
+  }
+  body:has(.mission-dossier[open]) .kids-game {
+    display: block;
+    width: auto;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    background: #fff;
+  }
+  .kids-game .mission-dossier[open] {
+    position: static;
+    width: 100%;
+    max-width: none;
+    height: auto;
+    max-height: none;
+    margin: 0;
+    padding: 13px;
+    overflow: visible;
+    color: #202435;
+    background: #fff;
+    border: 2px solid #9a752b;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+  .mission-dossier::backdrop {
+    display: none;
+  }
+  .kids-game
+    .mission-dossier
+    :where(h2, p, div, dt, dd, span, strong, small, b, em, a) {
+    color: #202435 !important;
+    font-family: system-ui, sans-serif !important;
+    line-height: 1.25 !important;
+    text-shadow: none;
+  }
+  .kids-game
+    .mission-dossier
+    :is(
+      .dossier-masthead,
+      .dossier-heading,
+      .diploma-medals,
+      .diploma-power,
+      .dossier-grid > div
+    ) {
+    background: #fff;
+    padding: 9px 12px;
+  }
+  .kids-game .mission-dossier .nasa-pixel {
+    background: #fff;
+  }
+  .kids-game .mission-dossier .diploma-medals {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .kids-game .mission-dossier .diploma-medal {
+    background: #fff;
+    padding: 6px;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+  .diploma-medal svg {
+    width: 32px;
+    height: 38px;
+  }
+  .kids-game .mission-dossier .dossier-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+    margin: 0;
+    border: 0;
+  }
+  .kids-game .mission-dossier .dossier-grid > div {
+    border-color: #a69d88;
+    break-inside: avoid;
+  }
+  .kids-game .mission-dossier .dossier-grid dt {
+    font-size: 12px;
+    margin-bottom: 5px;
+  }
+  .kids-game .mission-dossier .dossier-grid dd {
+    font-size: 18px !important;
+  }
+  .kids-game
+    .mission-dossier
+    :is(.diploma-city, .dossier-telemetry, .dossier-note) {
+    font-size: 13px;
+    margin: 8px 0;
+  }
+}

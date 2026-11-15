@@ -1,8 +1,8 @@
-@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;600;700&family=Silkscreen:wght@400;700&family=Press+Start+2P&display=swap");
 @import "tailwindcss";
 @theme {
-  --font-pixel: "Press Start 2P", monospace;
-  --font-terminal: "VT323", monospace;
+  --font-pixel: "Silkscreen", monospace;
+  --font-terminal: "Pixelify Sans", monospace;
 }
 :root {
   --bg: #100f17;
@@ -13,8 +13,8 @@
   --orange: #ec6a4a;
   --green: #a1cd8c;
   --cyan: #5ce1e6;
-  --pixel: "Press Start 2P", monospace;
-  --terminal: "VT323", monospace;
+  --pixel: "Silkscreen", monospace;
+  --terminal: "Pixelify Sans", monospace;
   color-scheme: dark;
 }
 * {

@@ -1,9 +1,12 @@
 "use client";
+import { useTranslate } from "@/components/GameProvider";
 import { useEffect, useRef, type ReactNode } from "react";
+import { LanguageButton } from "./LanguageButton";
 export function TacticalModal({
   title,
   tag,
   onClose,
+  onInfo,
   children,
   action,
   preview,
@@ -12,11 +15,13 @@ export function TacticalModal({
   title: string;
   tag: string;
   onClose: () => void;
+  onInfo?: () => void;
   children: ReactNode;
   action?: ReactNode;
   preview?: ReactNode;
   kind?: string;
 }) {
+  const tr = useTranslate();
   const ref = useRef<HTMLDialogElement>(null);
   const close = useRef(onClose);
   close.current = onClose;
@@ -33,7 +38,7 @@ export function TacticalModal({
     <dialog
       ref={ref}
       className={`world-tactical tactical-${kind}`}
-      aria-label={title}
+      aria-label={tr(title)}
       onCancel={(e) => {
         e.preventDefault();
         close.current();
@@ -53,16 +58,24 @@ export function TacticalModal({
     >
       <div className="tactical-header">
         <div>
-          <span>{tag}</span>
-          <h2>{title}</h2>
+          <span>{tr(tag)}</span>
+          <h2>{tr(title)}</h2>
         </div>
-        <button
-          className="tactical-close"
-          onClick={onClose}
-          aria-label="Volver al mapa"
-        >
-          ×<small>ESC</small>
-        </button>
+        <div className="tactical-header-actions">
+          <LanguageButton />
+          {onInfo && (
+            <button className="tactical-nasa-button" onClick={onInfo}>
+              {tr("[?] Info NASA")}
+            </button>
+          )}
+          <button
+            className="tactical-close"
+            onClick={onClose}
+            aria-label={tr("Volver al mapa")}
+          >
+            ×<small>{tr("Volver")}</small>
+          </button>
+        </div>
       </div>
       {preview && <div className="tactical-preview">{preview}</div>}
       <div className="tactical-body">{children}</div>
@@ -71,7 +84,7 @@ export function TacticalModal({
       >
         {action}
         <span className="tactical-footer-hint">
-          PUEDES VOLVER AL MAPA CON ESC
+          {tr("PUEDES VOLVER AL MAPA CON ESC")}
         </span>
       </div>
     </dialog>

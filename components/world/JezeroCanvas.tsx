@@ -6,21 +6,30 @@ import {
   useRef,
   useState,
 } from "react";
-import { useGame } from "../GameProvider";
-import { WORLD, type Point } from "@/lib/isometric";
+import { useGame, useTranslate } from "../GameProvider";
+import { WORLD, project, type Point } from "@/lib/isometric";
 import { ROUTES, terrainPath, roverKeyboardStep } from "@/lib/rover";
-import { renderJezero, pickJezeroTile } from "@/lib/jezero-renderer";
+import { createMotionTrail } from "@/lib/world-renderer";
+import {
+  renderJezero,
+  pickJezeroTile,
+  jezeroProject,
+} from "@/lib/jezero-renderer";
+const EXTRACTION = jezeroProject(ROUTES.short.points[ROUTES.short.segments]);
+
 export type JezeroHandle = { next: () => void };
 export const JezeroCanvas = forwardRef<
   JezeroHandle,
   { onMoving: (moving: boolean) => void; blocked: boolean }
 >(function JezeroCanvas({ onMoving, blocked }, ref) {
+  const tr = useTranslate();
   const { state, act } = useGame(),
     live = useRef({ state, act, onMoving, blocked });
   live.current = { state, act, onMoving, blocked };
   const canvas = useRef<HTMLCanvasElement>(null),
     container = useRef<HTMLDivElement>(null),
     hero = useRef<Point>({ x: 1, y: 8 }),
+    heading = useRef<Point | null>(null),
     path = useRef<Point[]>([]),
     hover = useRef<Point | null>(null),
     keys = useRef(new Set<string>()),
@@ -49,7 +58,12 @@ export const JezeroCanvas = forwardRef<
     const el = container.current;
     if (!el) return;
     const observer = new ResizeObserver(([v]) =>
-      setFit(Math.min(v.contentRect.width / 800, v.contentRect.height / 520)),
+      setFit(
+        Math.min(
+          v.contentRect.width / (WORLD.width * 0.94),
+          v.contentRect.height / (WORLD.height * 0.8),
+        ),
+      ),
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -113,6 +127,8 @@ export const JezeroCanvas = forwardRef<
     let frame = 0,
       last = 0,
       lastMoving = false;
+    const trail = createMotionTrail();
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     function draw(time: number) {
       const delta = Math.min(0.045, (time - last) / 1000 || 0);
       last = time;
@@ -129,6 +145,11 @@ export const JezeroCanvas = forwardRef<
             dy = goal.y - hero.current.y,
             d = Math.hypot(dx, dy),
             amount = delta * 2.2;
+          if (d > 0.001) {
+            const ahead = project(goal);
+            const here = project(hero.current);
+            heading.current = { x: ahead.x - here.x, y: ahead.y - here.y };
+          }
           moving = true;
           if (d <= amount) {
             hero.current = { ...goal };
@@ -164,8 +185,26 @@ export const JezeroCanvas = forwardRef<
         lastMoving = moving;
         live.current.onMoving(moving);
       }
+      const reduced = motion.matches;
+      const footprints = trail.update(
+        jezeroProject(hero.current),
+        time,
+        moving,
+        reduced,
+      );
       const c = canvas.current?.getContext("2d");
-      if (c) renderJezero(c, s, hero.current, moving, time, hover.current);
+      if (c)
+        renderJezero(
+          c,
+          s,
+          hero.current,
+          moving,
+          time,
+          hover.current,
+          reduced,
+          heading.current,
+          footprints,
+        );
       frame = requestAnimationFrame(draw);
     }
     frame = requestAnimationFrame(draw);
@@ -180,25 +219,43 @@ export const JezeroCanvas = forwardRef<
   }
   return (
     <div className="jezero-canvas-container" ref={container}>
-      <canvas
-        ref={canvas}
-        width={800}
-        height={520}
-        style={{ width: 800 * fit, height: 520 * fit }}
-        tabIndex={0}
-        aria-label="Mapa de Jezero. Conduce con flechas, WASD o un toque."
-        onPointerMove={(e) => {
-          hover.current = tile(e);
+      <div
+        className="jezero-surface"
+        style={{
+          width: WORLD.width * fit,
+          height: WORLD.height * fit,
         }}
-        onPointerLeave={() => {
-          hover.current = null;
-        }}
-        onPointerDown={(e) => {
-          e.currentTarget.focus();
-          const p = tile(e);
-          if (p) walk(p);
-        }}
-      />
+      >
+        <canvas
+          ref={canvas}
+          width={WORLD.width}
+          height={WORLD.height}
+          tabIndex={0}
+          aria-label={tr(
+            "Mapa de Jezero. Conduce con flechas, WASD o un toque.",
+          )}
+          onPointerMove={(e) => {
+            hover.current = tile(e);
+          }}
+          onPointerLeave={() => {
+            hover.current = null;
+          }}
+          onPointerDown={(e) => {
+            e.currentTarget.focus();
+            const p = tile(e);
+            if (p) walk(p);
+          }}
+        />
+        <div
+          className="jezero-extraction-label"
+          style={{
+            left: `${((EXTRACTION.x + 38) / WORLD.width) * 100}%`,
+            top: `${((EXTRACTION.y - 73) / WORLD.height) * 100}%`,
+          }}
+        >
+          {tr("AQUÍ NOS RECOGEN")} <b>↗</b>
+        </div>
+      </div>
     </div>
   );
 });

@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import { GAME_DESCRIPTIONS, GAME_TITLES } from "@/lib/i18n";
 import "./globals.css";
 import "./world.css";
 import "./kids.css";
+import "./readability.css";
 export const metadata: Metadata = {
-  title: "MISIÓN RESCATE — Espejo Marciano",
-  description:
-    "Explora islas mágicas de Bolivia y Marte con Chispa. Aprende ciencia con datos reales de NASA.",
+  title: GAME_TITLES.es,
+  description: GAME_DESCRIPTIONS.es,
 };
 export default function RootLayout({
   children,

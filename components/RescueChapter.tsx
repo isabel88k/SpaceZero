@@ -1,16 +1,16 @@
 "use client";
-import { useGame } from "./GameProvider";
+import { useGame, useTranslate } from "./GameProvider";
 import { Oscilloscope } from "./Oscilloscope";
-import { NasaFact } from "./NasaFact";
 import { SIGNAL_TARGET, alignment } from "@/lib/rescue";
 export function RescueChapter() {
+  const tr = useTranslate();
   const { state: s, act } = useGame(),
     r = s.rescue,
     locked = !["idle", "tuning"].includes(r.status);
   const controls = [
     {
       field: "angle",
-      label: "Girar la antena",
+      label: tr("Girar la antena"),
       min: 0,
       max: 180,
       step: 1,
@@ -20,7 +20,7 @@ export function RescueChapter() {
     },
     {
       field: "frequency",
-      label: "Velocidad de la señal",
+      label: tr("Velocidad de la señal"),
       min: 1,
       max: 8,
       step: 0.1,
@@ -30,7 +30,7 @@ export function RescueChapter() {
     },
     {
       field: "phase",
-      label: "Juntar las líneas",
+      label: tr("Juntar las líneas"),
       min: 0,
       max: 360,
       step: 5,
@@ -42,12 +42,12 @@ export function RescueChapter() {
   return (
     <div className="easy-mission easy-signal">
       <p className="mission-instruction">
-        Objetivo: junta la línea azul con la verde.
+        {tr("Objetivo: junta la línea azul con la verde.")}
       </p>
       {controls.map((c) => (
         <label className="easy-slider" key={c.field}>
           <span>
-            {c.label}
+            {tr(c.label)}
             <strong>
               {r[c.field].toFixed(c.field === "frequency" ? 1 : 0)}
               {c.unit}
@@ -68,7 +68,7 @@ export function RescueChapter() {
               step={c.step}
               value={r[c.field]}
               disabled={locked}
-              aria-label={c.label}
+              aria-label={tr(c.label)}
               onChange={(e) =>
                 act({
                   type: "SIGNAL_SET",
@@ -79,25 +79,29 @@ export function RescueChapter() {
             />
           </div>
           <small>
-            Acércalo a {c.target}
+            {tr("Acércalo a")} {c.target}
             {c.unit}.
           </small>
         </label>
       ))}
       <div className="easy-progress">
         <span>
-          Llamada conectada <b>{Math.round(r.progress)}%</b>
+          {tr("Llamada conectada")} <b>{Math.round(r.progress)}%</b>
         </span>
-        <progress max={100} value={r.progress} aria-label="Llamada conectada" />
+        <progress
+          max={100}
+          value={r.progress}
+          aria-label={tr("Llamada conectada")}
+        />
       </div>
       {r.status === "tuning" && (
         <p className="short-copy easy-tip">
-          Tienes 20 segundos. Mantén las líneas cerca.
+          {tr("Tienes 20 segundos. Mantén las líneas cerca.")}
         </p>
       )}
       {r.status === "connected" && (
         <p className="short-copy" role="status">
-          ¡Hay señal! NASA está revisando la actividad del Sol.
+          {tr("¡Hay señal! NASA está revisando la actividad del Sol.")}
         </p>
       )}
       {r.status === "failed" && (
@@ -106,47 +110,31 @@ export function RescueChapter() {
             className="world-secondary"
             onClick={() => act({ type: "RETRY_STORM" })}
           >
-            VOLVER A LIMPIAR PANELES
+            {tr("VOLVER A LIMPIAR PANELES")}
           </button>
         </>
       )}
-      <NasaFact
-        mission="signal"
-        disabled={r.status === "tuning" || r.status === "alert"}
-      >
-        {r.event && (
-          <>
-            <p className="short-copy">
-              Llamarada {r.event.classType} ·{" "}
-              {r.event.source === "live"
-                ? "Consulta NASA"
-                : "Dato real guardado"}
-            </p>
-            <p className="short-copy">
-              {r.event.peakTime.replace("T", " · ").replace("Z", " UTC")}
-            </p>
-            <p className="short-copy">Zona del Sol: {r.event.activeRegion}</p>
-            <a href={r.event.link} target="_blank" rel="noreferrer">
-              Ver este dato en NASA ↗
-            </a>
-          </>
-        )}
-      </NasaFact>
     </div>
   );
 }
 
 export function SignalPreview() {
+  const tr = useTranslate();
   const { state } = useGame(),
     r = state.rescue,
     accuracy = alignment(r);
   const locked = !["idle", "tuning"].includes(r.status);
   return (
-    <div className="signal-preview">
+    <div
+      className={`signal-preview${accuracy >= 75 ? " signal-captured" : ""}`}
+    >
       <Oscilloscope />
       <div
         className="signal-color-bar"
-        aria-label={`Señal: ${Math.round(accuracy)} de 100`}
+        aria-label={tr(
+          `Señal: ${Math.round(accuracy)} de 100`,
+          `Signal: ${Math.round(accuracy)} out of 100`,
+        )}
         role="meter"
         aria-valuenow={Math.round(accuracy)}
         aria-valuemin={0}
@@ -174,12 +162,12 @@ export function SignalPreview() {
         role="status"
       >
         {locked
-          ? r.message
+          ? tr(r.message)
           : accuracy >= 75
-            ? "¡Lo tienes! Deja los controles así."
+            ? tr("¡Lo tienes! Deja los controles así.")
             : accuracy >= 65
-              ? "¡Casi listo! Acerca un poco más las líneas."
-              : "Lleva los controles hacia la zona verde."}
+              ? tr("¡Casi listo! Acerca un poco más las líneas.")
+              : tr("Lleva los controles hacia la zona verde.")}
       </div>
     </div>
   );

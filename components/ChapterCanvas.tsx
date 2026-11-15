@@ -1,179 +1,332 @@
 "use client";
-import { useEffect, useRef } from "react";
-import { useGame } from "./GameProvider";
-export function GreenhouseCanvas() {
+
+import { useCallback, useEffect, useRef } from "react";
+import { drawPixelLabel } from "@/lib/canvas-label";
+import {
+  pixelBox as box,
+  pixelLine as line,
+  pixelPolygon as poly,
+} from "@/lib/world-renderer";
+import { SAFE_WATER } from "@/lib/ux";
+import { useGame, useTranslate } from "./GameProvider";
+
+type DrawFrame = (canvas: CanvasRenderingContext2D, time: number) => void;
+
+export function useChapterCanvas(draw: DrawFrame) {
   const ref = useRef<HTMLCanvasElement>(null);
-  const { state } = useGame();
-  const { growth, uv, risk } = state.greenhouse;
-  const health = state.resources.saludCosecha;
   useEffect(() => {
     const c = ref.current?.getContext("2d");
     if (!c) return;
     c.imageSmoothingEnabled = false;
-    const r = (color: string, x: number, y: number, w: number, h: number) => {
-      c.fillStyle = color;
-      c.fillRect(Math.floor(x), Math.floor(y), w, h);
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let frame = 0;
+
+    function paint(time: number) {
+      draw(c!, motion.matches ? 0 : time);
+      if (!motion.matches) frame = requestAnimationFrame(paint);
+    }
+
+    function restart() {
+      cancelAnimationFrame(frame);
+      paint(performance.now());
+    }
+
+    restart();
+    motion.addEventListener("change", restart);
+    return () => {
+      cancelAnimationFrame(frame);
+      motion.removeEventListener("change", restart);
     };
-    r("#171822", 0, 0, 640, 340);
-    for (let i = 0; i < 70; i++) {
-      const x = (i * 193 + 17) % 640,
-        y = (i * 67 + 29) % 160;
-      r(i % 4 ? "#777081" : "#b4a19c", x, y, 1, 1);
-    }
-    for (let y = 185; y < 340; y += 4)
-      for (let x = 0; x < 640; x += 4) {
-        const n = Math.sin(x * 12 + y * 7);
-        r(n > 0.5 ? "#754238" : n < -0.5 ? "#683b37" : "#5b3534", x, y, 4, 4);
-      }
-    r("#252731", 58, 260, 522, 20);
-    r("#777d81", 69, 250, 500, 10);
-    r("#373b47", 80, 103, 477, 147);
-    r("#707b80", 92, 76, 452, 8);
-    r("#657478", 81, 84, 476, 11);
-    r("#839091", 74, 95, 490, 10);
-    r("#a1ad9f", 68, 105, 7, 145);
-    r("#87968e", 561, 105, 7, 145);
-    r("#293b3d", 80, 108, 476, 135);
-    r("#375253", 83, 111, 470, 3);
-    r("#48726b", 87, 114, 462, 3);
-    for (let x = 91; x < 550; x += 76) {
-      r("#79938a", x, 104, 4, 142);
-      r("#91a89a", x, 105, 1, 134);
-    }
-    r("#718b80", 80, 157, 477, 3);
-    r("#253039", 82, 113, 471, 38);
-    const lamp = uv > 70 ? "#bdb2eb" : uv > 20 ? "#8c91c2" : "#4a4e64";
-    for (let x = 110; x < 540; x += 76) {
-      r("#686e80", x, 119, 50, 8);
-      r(lamp, x + 3, 127, 44, 4);
-      if (uv > 10) {
-        c.fillStyle = `rgba(147,139,207,${uv / 900})`;
-        c.beginPath();
-        c.moveTo(x + 3, 132);
-        c.lineTo(x - 13, 231);
-        c.lineTo(x + 65, 231);
-        c.lineTo(x + 47, 132);
-        c.fill();
-      }
-    }
+  }, [draw]);
+  return ref;
+}
+
+const WIDTH = 640;
+const HEIGHT = 212;
+
+function chemicalTank(
+  c: CanvasRenderingContext2D,
+  time: number,
+  hydrogen: number,
+  risk: number,
+) {
+  const safe = hydrogen >= SAFE_WATER.min && hydrogen <= SAFE_WATER.max;
+  const hot = hydrogen > SAFE_WATER.max;
+  const glow = 0.52 + Math.cos(time / 310) * 0.23;
+  box(c, "#526578", 74, 48, 87, 15);
+  box(c, "#354659", 146, 55, 15, 101);
+  box(c, "#91a8b7", 151, 58, 6, 90);
+  box(c, "#3f7785", 155, 58, 4, 90);
+  box(c, "#465364", 31, 69, 98, 97);
+  box(c, "#a8bac0", 37, 62, 86, 106);
+  box(c, "#526275", 44, 72, 73, 89);
+  box(c, "#17212d", 49, 78, 63, 76);
+  box(
+    c,
+    safe ? "#148b9e" : hot ? "#a23a39" : "#475d85",
+    49,
+    153 - hydrogen * 0.68,
+    63,
+    hydrogen * 0.68,
+  );
+  box(
+    c,
+    safe ? "#5de2f2" : hot ? "#ff9b79" : "#a2bad4",
+    49,
+    152 - hydrogen * 0.68,
+    63,
+    2,
+  );
+  box(c, "#a7bac140", 53, 82, 7, 67);
+  box(c, "#71899b", 64, 48, 30, 14);
+  box(
+    c,
+    risk > 75 || hot ? "#ff725f" : safe ? "#8bffd9" : "#b7a8df",
+    100,
+    56,
+    13,
+    7,
+  );
+  if (safe) {
     for (let i = 0; i < 7; i++) {
-      const x = 103 + i * 65,
-        base = 232;
-      const h = 8 + growth * 0.62 + (i % 3) * 5;
-      const leaf =
-        health < 35 ? "#977748" : health < 65 ? "#7e9d48" : "#72bf57";
-      r("#57483a", x - 10, base, 42, 10);
-      r("#94836a", x - 13, base + 10, 48, 5);
-      r("#475644", x + 8, base - h, 4, h);
-      for (let j = 0; j < Math.max(1, Math.floor(h / 12)); j++) {
-        const y = base - j * 12 - 9;
-        const side = j % 2 === 0 ? 1 : -1;
-        const droop = health < 45 ? 5 : 0;
-        r(leaf, x + 9 + (side > 0 ? 3 : -13), y + droop, 13, 5);
-        r(
-          health < 35 ? "#7c603d" : "#a4d077",
-          x + 9 + (side > 0 ? 9 : -16),
-          y - 4 + droop,
-          8,
-          5,
-        );
-      }
-      if (growth > 65 && health > 35) {
-        r("#c2cf79", x + 5, base - h - 6, 10, 7);
-        r("#daca6a", x + 8, base - h - 8, 4, 4);
-      }
+      const rise = (time / 940 + i / 7) % 1;
+      const x = 151 + (i % 3);
+      const y = 142 - rise * 78;
+      box(c, "#0b526c", x - 1, y, 6, 7);
+      box(c, "#89faff", x, y, 4, 4);
     }
-    r("#898c85", 81, 244, 476, 5);
-    r("#d2c3a8", 576, 193, 32, 62);
-    r("#656b76", 580, 204, 24, 26);
-    r(risk > 75 ? "#FF2A2A" : "#39FF14", 584, 209, 5, 5);
-    r("#a8a394", 580, 237, 24, 6);
-    r("#474a57", 587, 255, 12, 20);
-    r("#999a8b", 595, 183, 3, 11);
-    r("#6c6b66", 566, 201, 10, 4);
-    r("#b9b1a0", 29, 203, 20, 35);
-    r("#e1d4ba", 30, 190, 20, 16);
-    r("#628d99", 34, 193, 13, 8);
-    r("#91897c", 31, 237, 7, 17);
-    r("#bdb29c", 43, 236, 7, 18);
-    r("#414049", 29, 252, 10, 4);
-    r("#414049", 42, 252, 11, 4);
-    r("#cb694f", 44, 212, 4, 5);
-    c.font = "10px monospace";
-    c.fillStyle = "#b7c2a2";
-    c.fillText("ARES / BIO-01", 85, 278);
-    c.fillStyle = "#9a8b7e";
-    c.fillText("REGOLITO TRATADO · CIRCUITO CERRADO", 278, 278);
-  }, [growth, health, uv, risk]);
+  } else if (hot) {
+    box(c, `rgba(255, 80, 69, ${glow})`, 37, 62, 86, 7);
+    box(c, `rgba(255, 80, 69, ${glow * 0.42})`, 37, 70, 86, 97);
+    box(c, "#2b111a", 74, 95, 16, 26);
+    box(c, "#ffc690", 79, 98, 5, 11);
+    box(c, "#ffc690", 79, 113, 5, 5);
+    for (let i = 0; i < 6; i++) {
+      const drift = (time / 1240 + i * 0.19) % 1;
+      box(
+        c,
+        `rgba(255, 179, 142, ${(1 - drift) * 0.73})`,
+        67 + drift * (i % 2 ? 31 : -19),
+        49 - 37 * drift,
+        8 + drift * 14,
+        5 + drift * 8,
+      );
+    }
+  }
+}
+
+function crop(
+  c: CanvasRenderingContext2D,
+  x: number,
+  i: number,
+  growth: number,
+  health: number,
+  time: number,
+) {
+  const soil = 160;
+  const height = 16 + growth * 0.66 + (i % 3) * 5;
+  const sway = Math.round(Math.sin(time / 580 + i * 0.86) * 4);
+  const top = soil - height;
+  const stem = "#49866a";
+  const leaf = health < 35 ? "#b98547" : health < 65 ? "#90b450" : "#70db71";
+  box(c, "#564258", x - 17, soil, 34, 12);
+  box(c, "#b17d65", x - 20, soil - 2, 40, 4);
+  line(c, stem, [x, soil - 2], [x + sway, top], 3);
+  for (let h = 14; h < height; h += 13) {
+    const side = Math.floor(h / 13) % 2 ? -1 : 1;
+    const stemX = x + Math.round((sway * h) / height);
+    const y = soil - h;
+    poly(c, leaf, [
+      [stemX, y + 2],
+      [stemX + side * 6, y - 5],
+      [stemX + side * 13, y - 7],
+      [stemX + side * 12, y - 1],
+      [stemX + side * 7, y + 2],
+    ]);
+  }
+  if (growth > 50) {
+    const color = i % 2 ? "#ffc678" : "#ff8dc1";
+    box(c, color, x + sway - 6, top - 7, 13, 5);
+    box(c, color, x + sway - 2, top - 11, 5, 12);
+    box(c, "#fff498", x + sway - 1, top - 6, 4, 4);
+  }
+}
+
+export function GreenhouseCanvas() {
+  const tr = useTranslate();
+  const { state } = useGame();
+  const { growth, uv, risk, hydrogen } = state.greenhouse;
+  const health = state.resources.saludCosecha;
+  const draw = useCallback(
+    (c: CanvasRenderingContext2D, time: number) => {
+      box(c, "#101926", 0, 0, WIDTH, HEIGHT);
+      box(c, "#1e303c", 20, 21, 600, 157);
+      box(c, "#263d4d", 174, 30, 430, 136);
+      box(c, "#304851", 182, 44, 415, 112);
+      for (let x = 190; x < 570; x += 66) {
+        box(c, "#617686", x, 43, 4, 117);
+        box(c, "#111d32", x + 11, 49, 44, 8);
+        box(c, uv > 20 ? "#cab9fa" : "#747aab", x + 14, 50, 38, 4);
+        if (uv > 10) {
+          poly(c, `rgba(161, 133, 255, ${uv / 560})`, [
+            [x + 14, 54],
+            [x + 52, 54],
+            [x + 61, 159],
+            [x + 5, 159],
+          ]);
+        }
+      }
+      box(c, "#7f9aa3", 176, 30, 428, 5);
+      box(c, "#3b5061", 20, 171, 600, 7);
+      chemicalTank(c, time, hydrogen, risk);
+      for (let i = 0; i < 7; i++)
+        crop(c, 208 + i * 57, i, growth, health, time);
+      drawPixelLabel(c, tr("INVERNADERO"), 24, 194, {
+        size: 25,
+        color: "#ddffff",
+      });
+      drawPixelLabel(c, tr("AGUA PARA LAS PLANTAS"), 615, 194, {
+        size: 22,
+        align: "right",
+        color: "#fff3a3",
+      });
+    },
+    [growth, health, hydrogen, risk, uv, tr],
+  );
+  const ref = useChapterCanvas(draw);
   return (
     <canvas
       ref={ref}
-      width={640}
-      height={340}
+      width={WIDTH}
+      height={HEIGHT}
       className="greenhouse-canvas"
       role="img"
-      aria-label={`Plantas en píxeles: crecimiento ${Math.round(growth)}%, salud ${Math.round(health)}%. Las plantas crecen cuando tienen agua y luz.`}
+      aria-label={tr(
+        `Plantas en píxeles: crecimiento ${Math.round(growth)}%, salud ${Math.round(health)}%. Las plantas crecen cuando tienen agua y luz.`,
+        `Pixel plants: ${Math.round(growth)}% grown, ${Math.round(health)}% healthy. Plants grow when they have water and light.`,
+      )}
     />
   );
 }
+
+function dustPanel(c: CanvasRenderingContext2D, x: number, y: number) {
+  box(c, "#9c8e84", x + 32, y + 25, 5, 37);
+  box(c, "#675753", x + 19, y + 60, 39, 4);
+  const panel: [number, number][] = [
+    [x + 18, y],
+    [x + 94, y],
+    [x + 74, y + 42],
+    [x, y + 42],
+  ];
+  poly(c, "#233a55", panel);
+  for (let i = 0; i < 4; i++) {
+    line(c, "#aac3c4", panel[i], panel[(i + 1) % 4], 2);
+  }
+  for (let i = 1; i < 5; i++)
+    line(c, "#7398a3", [x + 18 + i * 15, y], [x + i * 15, y + 42]);
+  line(c, "#7398a3", [x + 9, y + 22], [x + 83, y + 22]);
+}
+
 export function DustCanvas() {
-  const ref = useRef<HTMLCanvasElement>(null);
+  const tr = useTranslate();
   const { state } = useGame();
   const eva = state.storm.allocation.eva;
-  useEffect(() => {
-    const c = ref.current?.getContext("2d");
-    if (!c) return;
-    c.imageSmoothingEnabled = false;
-    let raf = 0;
-    const reduced = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    function frame(t: number) {
-      c!.clearRect(0, 0, 640, 350);
-      c!.fillStyle = "#3a231e88";
-      c!.fillRect(0, 0, 640, 350);
-      for (let i = 0; i < 110; i++) {
-        const x = ((i * 97 + t * (0.04 + (i % 5) * 0.018)) % 720) - 40,
-          y = ((i * 71 + t * 0.009) % 370) - 10;
-        c!.fillStyle = ["#d3794866", "#e39a5b66", "#b36a4277"][i % 3];
-        c!.fillRect(
-          Math.floor(x / 3) * 3,
-          Math.floor(y / 3) * 3,
-          i % 5 === 0 ? 15 : 6,
-          3,
+  const round = state.storm.cycle;
+  const draw = useCallback(
+    (c: CanvasRenderingContext2D, time: number) => {
+      const sky = c.createLinearGradient(0, 0, 0, HEIGHT);
+      sky.addColorStop(0, "#5e352e");
+      sky.addColorStop(0.58, "#b96a42");
+      sky.addColorStop(1, "#e29b5e");
+      c.fillStyle = sky;
+      c.fillRect(0, 0, WIDTH, HEIGHT);
+      poly(c, "#985035", [
+        [0, 90],
+        [64, 57],
+        [160, 78],
+        [218, 110],
+        [371, 76],
+        [502, 90],
+        [640, 66],
+        [640, 170],
+        [0, 170],
+      ]);
+      poly(c, "#ac694a", [
+        [0, 141],
+        [121, 119],
+        [257, 129],
+        [407, 114],
+        [640, 127],
+        [640, 212],
+        [0, 212],
+      ]);
+      box(c, "#593d46", 39, 101, 110, 55);
+      box(c, "#a88172", 50, 94, 89, 9);
+      box(c, "#ffb974", 58, 111, 13, 9);
+      box(c, "#ffb974", 114, 111, 13, 9);
+      dustPanel(c, 411, 90);
+      dustPanel(c, 510, 98);
+      for (let i = 0; i < 32 + Math.min(round, 2) * 5; i++) {
+        const travel = time * (0.06 + (i % 4) * 0.016 + round * 0.01);
+        const x = ((i * 107 + travel) % 700) - 30;
+        const y = (i * 67 + travel * 0.26) % 194;
+        const length = 9 + (i % 4) * 8;
+        line(
+          c,
+          i % 4 ? "#ffc68d78" : "#fce0acb0",
+          [x, y],
+          [x + length, y + length * 0.24],
+          2,
         );
       }
       if (eva) {
-        const x = 430 + Math.floor(Math.sin(t / 400) * 7),
-          y = 246;
-        c!.fillStyle = "#eadac0";
-        c!.fillRect(x, y, 14, 14);
-        c!.fillRect(x - 2, y + 14, 18, 22);
-        c!.fillStyle = "#6ea3b3";
-        c!.fillRect(x + 2, y + 3, 11, 7);
-        c!.fillStyle = "#d1c4ad";
-        c!.fillRect(x, y + 36, 5, 12);
-        c!.fillRect(x + 10, y + 36, 5, 12);
-        c!.fillRect(x + 16, y + 15, 17, 5);
-        c!.fillStyle = "#a89a79";
-        c!.fillRect(x + 31, y + 13, 3, 32);
-        c!.fillRect(x + 26, y + 41, 14, 4);
+        const x = 374 + Math.round(Math.sin(time / 630) * 3);
+        const y = 116;
+        box(c, "#66484d", x - 12, y + 45, 46, 5);
+        box(c, "#f5e3cd", x, y, 19, 16);
+        box(c, "#2d526b", x + 4, y + 4, 13, 7);
+        box(c, "#8dddde", x + 5, y + 4, 10, 2);
+        box(c, "#dac7ba", x - 2, y + 16, 22, 20);
+        box(c, "#edddd0", x, y + 35, 7, 11);
+        box(c, "#edddd0", x + 12, y + 35, 7, 11);
+        line(c, "#f3e3c4", [x + 16, y + 21], [x + 30, y + 17], 4);
+        line(
+          c,
+          "#ead08b",
+          [x + 26, y + 24],
+          [x + 59, y + 3 + Math.sin(time / 180) * 3],
+          3,
+        );
+        for (let i = 0; i < 5; i++) {
+          const drift = (time / 750 + i * 0.23) % 1;
+          box(
+            c,
+            `rgba(255, 224, 172, ${(1 - drift) * 0.8})`,
+            x + 54 + drift * 26,
+            y + i - drift * 18,
+            4,
+            2,
+          );
+        }
       }
-      if (!reduced) raf = requestAnimationFrame(frame);
-    }
-    raf = requestAnimationFrame(frame);
-    return () => cancelAnimationFrame(raf);
-  }, [eva]);
+      drawPixelLabel(c, tr("TORMENTA DE POLVO"), 24, 24, {
+        size: 24,
+        color: "#fff0c7",
+      });
+    },
+    [eva, round, tr],
+  );
+  const ref = useChapterCanvas(draw);
   return (
     <canvas
       ref={ref}
-      width={640}
-      height={350}
+      width={WIDTH}
+      height={HEIGHT}
       className="dust-canvas"
       aria-label={
         eva
-          ? "Tormenta de polvo con astronauta limpiando paneles solares"
-          : "Tormenta de polvo naranja sobre el hábitat marciano"
+          ? tr("Tormenta de polvo con astronauta limpiando paneles solares")
+          : tr("Tormenta de polvo naranja sobre el hábitat marciano")
       }
       role="img"
     />
